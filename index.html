@@ -1,0 +1,198 @@
+import React, { useState } from 'react';
+import { 
+  PlusSquare, 
+  MinusSquare, 
+  XSquare, 
+  DivideSquare, 
+  TrendingUp, 
+  Calculator, 
+  GraduationCap, 
+  BookOpen,
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
+
+export default function App() {
+  const [selectedTopic, setSelectedTopic] = useState(null);
+
+  // 배너 데이터 구성
+  const banners = [
+    {
+      id: 1,
+      title: '정수의 덧셈과 뺄셈',
+      description: '부호가 같거나 다른 두 정수의 덧셈과 뺄셈 원리를 완벽하게 이해해보세요.',
+      link: 'https://gemini.google.com/share/ae715938599e',
+      icon: (
+        <div className="flex gap-2 text-blue-100 mb-4">
+          <PlusSquare size={40} />
+          <MinusSquare size={40} />
+        </div>
+      ),
+      color: 'from-blue-500 to-blue-700',
+      shadow: 'shadow-blue-200'
+    },
+    {
+      id: 2,
+      title: '정수의 곱셈과 나눗셈',
+      description: '부호가 같은, 혹은 다른 두 정수의 곱셈과 나눗셈 규칙을 마스터하세요.',
+      link: 'https://integer-operations-master-611946696143.asia-east1.run.app/',
+      icon: (
+        <div className="flex gap-2 text-emerald-100 mb-4">
+          <XSquare size={40} />
+          <DivideSquare size={40} />
+        </div>
+      ),
+      color: 'from-emerald-500 to-teal-700',
+      shadow: 'shadow-emerald-200'
+    },
+    {
+      id: 3,
+      title: '유리수의 거듭제곱',
+      description: '양수와 음수를 여러 번 곱할 때 부호가 어떻게 변하는지 확실히 알아봅시다.',
+      link: 'https://gemini.google.com/share/4687b224455b',
+      icon: (
+        <div className="flex gap-2 text-purple-100 mb-4">
+          <TrendingUp size={40} />
+        </div>
+      ),
+      color: 'from-purple-500 to-indigo-700',
+      shadow: 'shadow-purple-200'
+    },
+    {
+      id: 4,
+      title: '정수의 덧셈과 뺄셈 혼합계산',
+      titleClass: 'text-sm md:text-base xl:text-lg tracking-tighter whitespace-nowrap',
+      description: '여러 개의 정수가 섞여 있는 복잡한 식을 괄호의 순서에 맞게 차근차근 풀어보세요.',
+      link: 'https://gemini.google.com/share/109bcc5af8e3',
+      icon: (
+        <div className="flex gap-2 text-rose-100 mb-4">
+          <Calculator size={40} />
+        </div>
+      ),
+      color: 'from-rose-500 to-pink-700',
+      shadow: 'shadow-rose-200'
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-indigo-100">
+      {/* 헤더 섹션 */}
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-2 rounded-xl">
+              <GraduationCap className="text-white" size={28} />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+                중등 수학 허브
+              </h1>
+              <p className="text-sm text-slate-500 font-medium">기초부터 탄탄하게 다지는 연산 학습</p>
+            </div>
+          </div>
+          <button className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors text-sm sm:text-base">
+            <BookOpen size={18} />
+            학습 가이드 보기
+          </button>
+        </div>
+      </header>
+
+      {/* 메인 히어로 섹션 */}
+      <section className="max-w-7xl mx-auto px-4 lg:px-8 pt-12 pb-8 sm:pt-16 sm:pb-12 text-center">
+        <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-6">
+          <Sparkles size={16} />
+          <span>수학 마스터를 위한 첫걸음</span>
+        </div>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight leading-tight">
+          유리수의 사칙연산 <br className="sm:hidden" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+            실력자 되기
+          </span>
+        </h2>
+        <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto font-medium">
+          원하는 학습 주제를 선택하여 유리수의 사칙연산을 완벽하게 정복해보세요.
+          기본 개념부터 혼합계산까지 체계적으로 학습할 수 있습니다.
+        </p>
+      </section>
+
+      {/* 배너 그리드 섹션 */}
+      <main className="max-w-7xl mx-auto px-4 lg:px-8 pb-24">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
+          {banners.map((banner) => (
+            <div 
+              key={banner.id}
+              onClick={() => setSelectedTopic(banner)}
+              className={`group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer overflow-hidden flex flex-col border border-slate-100 ${banner.shadow}`}
+            >
+              {/* 카드 상단 색상 배경 영역 */}
+              <div className={`bg-gradient-to-br ${banner.color} p-6 xl:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden`}>
+                {/* 배경 장식용 도형 */}
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10"></div>
+                <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-black opacity-10"></div>
+                
+                {banner.icon}
+                <h3 className={`${banner.titleClass || 'text-lg xl:text-xl'} font-bold text-white mb-2 relative z-10`}>
+                  {banner.title}
+                </h3>
+              </div>
+              
+              {/* 카드 하단 설명 영역 */}
+              <div className="p-5 xl:p-6 flex flex-col flex-grow justify-between bg-white">
+                <p className="text-slate-600 text-sm sm:text-base mb-6 line-clamp-3">
+                  {banner.description}
+                </p>
+                <div className="flex items-center justify-between text-indigo-600 font-semibold group-hover:text-indigo-700 transition-colors mt-auto text-sm sm:text-base">
+                  <span>학습 시작</span>
+                  <div className="bg-indigo-50 group-hover:bg-indigo-100 p-1.5 sm:p-2 rounded-full transition-colors transform group-hover:translate-x-1">
+                    <ChevronRight size={18} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      {/* 푸터 */}
+      <footer className="bg-slate-900 text-slate-400 py-8 text-center">
+        <p>© 2026 수학 학습 허브. 유리수의 사칙연산 정복 프로젝트.</p>
+      </footer>
+
+      {/* 모달 (학습 주제 클릭 시 임시 표시) */}
+      {selectedTopic && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${selectedTopic.color} flex items-center justify-center text-white mb-6 shadow-lg`}>
+              {selectedTopic.id === 1 && <PlusSquare size={32} />}
+              {selectedTopic.id === 2 && <XSquare size={32} />}
+              {selectedTopic.id === 3 && <TrendingUp size={32} />}
+              {selectedTopic.id === 4 && <Calculator size={32} />}
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">{selectedTopic.title}</h3>
+            <p className="text-slate-600 mb-8 leading-relaxed">
+              {selectedTopic.description}<br/><br/>
+              해당 단원의 학습 콘텐츠(영상, 문제풀이 등)가 들어갈 페이지로 이동합니다.
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setSelectedTopic(null)}
+                className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-colors"
+              >
+                닫기
+              </button>
+              <button 
+                onClick={() => {
+                  window.open(selectedTopic.link, '_blank');
+                  setSelectedTopic(null);
+                }}
+                className={`flex-1 px-4 py-3 bg-gradient-to-r ${selectedTopic.color} text-white rounded-xl font-semibold transition-all shadow-md hover:shadow-lg`}
+              >
+                입장하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
