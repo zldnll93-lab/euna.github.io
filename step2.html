@@ -465,7 +465,7 @@
     const incorrectAnswers = history.filter(h => !h.isCorrect);
     let analysis = "오답이 없습니다. 완벽합니다!";
     if(incorrectAnswers.length > 0) {
-      analysis = incorrectAnswers.map(h => `- 문제: ${h.question}, 제출한 답: ${h.userAnswer}, 정답: ${h.correctAnswer}`).join('\\n');
+      analysis = incorrectAnswers.map(h => `- 문제: ${h.question}, 제출한 답: ${h.userAnswer}, 정답: ${h.correctAnswer}`).join('\n');
     }
     
     const prompt = `당신은 학생들을 진심으로 아끼고 격려하는 중학교 수학 선생님입니다. 학생이 이해하기 쉽도록 친절하고 다정한 '해요체'를 사용합니다.
@@ -484,7 +484,7 @@ ${analysis}
 3. 길이는 4~6문장 이내로 줄바꿈을 적절히 활용해 작성. 마크다운 기호 사용 금지.`;
 
     try {
-      const url = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\${GEMINI_API_KEY}\`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -555,7 +555,7 @@ ${analysis}
     document.getElementById('result-name').textContent = user.name;
     document.getElementById('result-score').textContent = score;
     document.getElementById('result-time').textContent = time;
-    document.getElementById('result-feedback').innerHTML = feedback.replace(/\\n/g, '<br>');
+    document.getElementById('result-feedback').innerHTML = feedback.replace(/\n/g, '<br>');
     
     const btnPdf = document.getElementById('btn-pdf');
     if (pdfUrl && !pdfUrl.includes("실패")) {
