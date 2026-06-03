@@ -167,7 +167,6 @@
                 </div>
 
                 <h3 class="text-xl text-gray-800 mb-3 border-l-4 border-mint-500 pl-2 page-break-avoid">결과 요약표</h3>
-                <!-- 💡 캡처 시 스크롤 때문에 잘리는 현상을 막기 위해 overflow-x-auto를 캡처 순간에만 컨트롤합니다. -->
                 <div id="table-wrapper" class="overflow-x-auto mb-6">
                     <table class="w-full text-sm text-center border-collapse">
                         <thead>
@@ -202,7 +201,6 @@
 
         <!-- 순위표 모달 -->
         <div id="ranking-modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 fade-in">
-            <!-- 💡 날짜가 들어갈 공간 확보를 위해 넓이를 max-w-lg로 살짝 넓혔습니다 -->
             <div class="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[80vh] flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl text-gray-800 font-bold border-l-4 border-mint-500 pl-2">명예의 전당 (Top 30) 🏆</h3>
@@ -216,7 +214,6 @@
                                 <th class="py-2 border-b">이름</th>
                                 <th class="py-2 border-b">정답</th>
                                 <th class="py-2 border-b">시간</th>
-                                <!-- 💡 접속 일시 헤더 추가 -->
                                 <th class="py-2 border-b">접속 일시</th>
                             </tr>
                         </thead>
@@ -258,7 +255,7 @@
             btnShowRanking: document.getElementById('btn-show-ranking'),
             btnCloseRanking: document.getElementById('btn-close-ranking'),
             rankingModal: document.getElementById('ranking-modal'),
-            tableWrapper: document.getElementById('table-wrapper'), // 테이블 래퍼 참조 추가
+            tableWrapper: document.getElementById('table-wrapper'), 
         };
 
         function init() {
@@ -529,7 +526,6 @@
                 element.style.padding = '40px';
                 element.style.backgroundColor = '#ffffff';
 
-                // 💡 [해결] 캡처 직전에 표를 감싸는 스크롤 영역을 완전히 풂 (가위로 잘리는 현상 방지)
                 if (el.tableWrapper) el.tableWrapper.style.overflow = 'visible';
 
                 const fullHeight = element.scrollHeight;
@@ -548,7 +544,6 @@
                 element.classList.add('shadow-sm', 'rounded-xl');
                 element.style.padding = '';
                 
-                // 💡 캡처 끝난 후 다시 표 영역에 스크롤 원상복구
                 if (el.tableWrapper) el.tableWrapper.style.overflow = '';
 
                 // 서버 전송용 PDF 생성
@@ -588,7 +583,6 @@
                 console.error("저장 오류:", err);
                 alert("일부 처리 중 오류가 발생했습니다: " + err.message);
             } finally {
-                // 에러가 나더라도 스크롤 복구 보장
                 if (el.tableWrapper) el.tableWrapper.style.overflow = '';
                 if (document.getElementById('result-overlay')) {
                     document.body.removeChild(document.getElementById('result-overlay'));
@@ -635,7 +629,6 @@
                     <td class="border-b py-2">${r.studentName}</td>
                     <td class="border-b py-2 text-green-600">${r.correctCount}</td>
                     <td class="border-b py-2 text-gray-500">${m}:${s}</td>
-                    <!-- 💡 접속 일시 데이터 추가 -->
                     <td class="border-b py-2 text-gray-400 text-xs">${r.loginTime || '-'}</td>
                 `;
                 tbody.appendChild(tr);
@@ -707,6 +700,12 @@ ${wrongAnswers ? wrongAnswers : '틀린 문제가 없습니다! 완벽합니다.
             cleanText = cleanText.replace(/\n/g, ' '); 
             cleanText = cleanText.replace(/@@DOUBLE_ENTER@@/g, '\n\n'); 
             
+            // 💡 [해결 핵심 코드] 수식 기호($) 안쪽에 생긴 띄어쓰기를 완벽하게 제거
+            // 이 3줄 덕분에 깃허브에서도 에러 없이 MathJax가 수식을 완벽하게 렌더링하게 됩니다!
+            cleanText = cleanText.replace(/\$([^\$]+)\$/g, (match, p1) => {
+                return '$' + p1.trim() + '$';
+            });
+            
             return cleanText;
         }
 
@@ -725,7 +724,6 @@ ${wrongAnswers ? wrongAnswers : '틀린 문제가 없습니다! 완벽합니다.
                 element.style.padding = '40px';
                 element.style.backgroundColor = '#ffffff';
 
-                // 💡 [해결] 캡처 직전에 표를 감싸는 스크롤 영역을 완전히 풂
                 if (el.tableWrapper) el.tableWrapper.style.overflow = 'visible';
 
                 const fullHeight = element.scrollHeight;
@@ -744,7 +742,6 @@ ${wrongAnswers ? wrongAnswers : '틀린 문제가 없습니다! 완벽합니다.
                 element.classList.add('shadow-sm', 'rounded-xl');
                 element.style.padding = '';
                 
-                // 💡 캡처 끝난 후 복구
                 if (el.tableWrapper) el.tableWrapper.style.overflow = '';
                 
                 const link = document.createElement('a');
