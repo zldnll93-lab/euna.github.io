@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>정수와 유리수의 거듭제곱 훈련소</title>
-    
-    <!-- 폰트: Jua (귀여운 느낌) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" crossorigin="anonymous">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -25,742 +21,103 @@
             }
         }
     </script>
-    
-    <!-- MathJax 전역 설정 -->
     <script>
         window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true
-            },
-            svg: {
-                fontCache: 'none' 
-            },
-            options: {
-                enableMenu: false,
-                renderActions: {
-                    assistiveMml: [] 
-                }
-            },
-            startup: {
-                typeset: false
-            }
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            svg: { fontCache: 'none' },
+            options: { enableMenu: false, renderActions: { assistiveMml: [] } },
+            startup: { typeset: false }
         };
     </script>
-    <!-- MathJax 라이브러리 -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-    
-    <!-- 진짜 거울 캡처(html-to-image) 도입 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <!-- marked.js -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <!-- Google Generative AI SDK -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
-
     <style>
         body { font-family: 'Jua', sans-serif; background-color: #F0FDF4; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .math-display { font-size: 2rem; padding: 1.5rem; background-color: white; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        
         #pdf-content { width: 100%; box-sizing: border-box; }
-        
-        .page-break-avoid, #result-table-body tr, .markdown-body p, .markdown-body li, .markdown-body h1, .markdown-body h2, .markdown-body h3 { 
-            page-break-inside: avoid; 
-        }
-        
-        /* 가독성을 위한 줄간격 및 단어 끊어짐 방지 */
+        .page-break-avoid, #result-table-body tr, .markdown-body p, .markdown-body li, .markdown-body h1, .markdown-body h2, .markdown-body h3 { page-break-inside: avoid; }
         .markdown-body p { margin-bottom: 1rem; line-height: 2.2; word-break: keep-all; text-align: justify; }
-        
-        /* 높낮이 방해꾼이었던 vertical-align: middle 삭제. 인라인 설정만 유지 */
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
         .markdown-body mjx-container { display: inline-block !important; margin: 0 !important; }
         .markdown-body mjx-container[display="true"] { display: inline-block !important; margin: 0 !important; width: auto !important; text-align: left !important; }
     </style>
 </head>
 <body class="text-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
-
-    <!-- 설정 변수 -->
     <script>
-        const API_KEY = "AIzaSyB_qTr9P-uuPe41QAiDzbmZELSmi4_3xfc"; 
         const GAS_URL = "https://script.google.com/macros/s/AKfycbxuR0ftea7Bt4H9R1dtOOjLuJWvI-Kg53xyZ1F7tibUQfAL-eoQ7_iiutCm9dGn0P_SJA/exec"; 
     </script>
-
     <div id="app" class="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden relative fade-in">
-        
         <div id="view-loading" class="p-8 text-center hidden">
             <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-mint-500 mx-auto mb-4"></div>
             <h2 class="text-xl text-mint-700" id="loading-msg">로딩 중...</h2>
         </div>
-
         <div id="view-login" class="p-8 hidden fade-in">
             <h1 class="text-3xl text-center text-mint-700 mb-2">거듭제곱 훈련소 🚀</h1>
             <p class="text-center text-gray-500 mb-6">정수와 유리수 마스터하기!</p>
             <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">학번 (예: 10101)</label>
-                    <input type="number" id="input-id" required class="w-full px-4 py-2 rounded-xl border-2 border-mint-100 focus:border-mint-500 focus:outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">이름</label>
-                    <input type="text" id="input-name" required class="w-full px-4 py-2 rounded-xl border-2 border-mint-100 focus:border-mint-500 focus:outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1">비밀번호</label>
-                    <input type="password" id="input-pw" required class="w-full px-4 py-2 rounded-xl border-2 border-mint-100 focus:border-mint-500 focus:outline-none transition">
-                </div>
-                <button type="submit" class="w-full bg-mint-500 hover:bg-mint-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg mt-4">
-                    입장하기
-                </button>
+                <div><label class="block text-sm text-gray-600 mb-1">학번 (예: 10101)</label><input type="number" id="input-id" required class="w-full px-4 py-2 rounded-xl border-2 border-mint-100 focus:border-mint-500 focus:outline-none transition"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">이름</label><input type="text" id="input-name" required class="w-full px-4 py-2 rounded-xl border-2 border-mint-100 focus:border-mint-500 focus:outline-none transition"></div>
+                <div><label class="block text-sm text-gray-600 mb-1">비밀번호</label><input type="password" id="input-pw" required class="w-full px-4 py-2 rounded-xl border-2 border-mint-100 focus:border-mint-500 focus:outline-none transition"></div>
+                <button type="submit" class="w-full bg-mint-500 hover:bg-mint-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg mt-4">입장하기</button>
             </form>
         </div>
-
         <div id="view-quiz" class="p-6 hidden fade-in">
-            <div class="flex justify-between items-center mb-6">
-                <span class="bg-pastel-blue text-blue-800 px-3 py-1 rounded-full text-sm font-bold" id="quiz-progress">1 / 15</span>
-                <span class="text-gray-500 text-sm" id="quiz-timer">00:00</span>
-            </div>
-            
-            <div class="text-center mb-8 math-display min-h-[120px] flex items-center justify-center relative">
-                <div id="math-problem"></div>
-                <div id="feedback-icon" class="absolute inset-0 flex items-center justify-center text-6xl opacity-0 transition-opacity duration-300 pointer-events-none"></div>
-            </div>
-
-            <form id="answer-form" class="space-y-4">
-                <input type="text" id="input-answer" placeholder="정답 입력 (분수는 1/2 형식)" required autocomplete="off" class="w-full text-center text-2xl px-4 py-3 rounded-xl border-2 border-mint-300 focus:border-mint-500 focus:outline-none transition">
-                <button type="submit" class="w-full bg-mint-500 hover:bg-mint-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg">
-                    확인 (Enter)
-                </button>
-            </form>
-            <p class="text-center text-xs text-gray-400 mt-4">부호와 숫자를 정확히 입력해주세요.</p>
+            <div class="flex justify-between items-center mb-6"><span class="bg-pastel-blue text-blue-800 px-3 py-1 rounded-full text-sm font-bold" id="quiz-progress">1 / 15</span><span class="text-gray-500 text-sm" id="quiz-timer">00:00</span></div>
+            <div class="text-center mb-8 math-display min-h-[120px] flex items-center justify-center relative"><div id="math-problem"></div><div id="feedback-icon" class="absolute inset-0 flex items-center justify-center text-6xl opacity-0 transition-opacity duration-300 pointer-events-none"></div></div>
+            <form id="answer-form" class="space-y-4"><input type="text" id="input-answer" placeholder="정답 입력 (분수는 1/2 형식)" required autocomplete="off" class="w-full text-center text-2xl px-4 py-3 rounded-xl border-2 border-mint-300 focus:border-mint-500 focus:outline-none transition"><button type="submit" class="w-full bg-mint-500 hover:bg-mint-700 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg">확인 (Enter)</button></form>
         </div>
     </div> 
-
-    <!-- 결과 뷰 -->
     <div id="view-result" class="hidden fade-in bg-mint-50 min-h-screen w-full fixed inset-0 z-50 overflow-y-auto">
         <div class="w-full flex justify-center p-4 sm:p-8 pb-32">
             <div id="pdf-content" class="w-full max-w-3xl bg-white p-6 sm:p-10 shadow-sm rounded-xl">
-                <div class="text-center mb-6 border-b-4 border-mint-300 pb-4 page-break-avoid">
-                    <h1 class="text-3xl text-mint-700 mb-2">훈련 완료! 🎉</h1>
-                    <p class="text-gray-600" id="result-user-info"></p>
-                </div>
-
+                <div class="text-center mb-6 border-b-4 border-mint-300 pb-4 page-break-avoid"><h1 class="text-3xl text-mint-700 mb-2">훈련 완료! 🎉</h1><p class="text-gray-600" id="result-user-info"></p></div>
                 <div class="grid grid-cols-2 gap-4 mb-6 page-break-avoid">
-                    <div class="bg-pastel-yellow p-4 rounded-2xl text-center shadow">
-                        <p class="text-gray-600 text-sm">맞힌 문제</p>
-                        <p class="text-3xl text-yellow-700"><span id="result-correct"></span> / 15</p>
-                    </div>
-                    <div class="bg-pastel-blue p-4 rounded-2xl text-center shadow">
-                        <p class="text-gray-600 text-sm">걸린 시간</p>
-                        <p class="text-3xl text-blue-700" id="result-time"></p>
-                    </div>
+                    <div class="bg-pastel-yellow p-4 rounded-2xl text-center shadow"><p class="text-gray-600 text-sm">맞힌 문제</p><p class="text-3xl text-yellow-700"><span id="result-correct"></span> / 15</p></div>
+                    <div class="bg-pastel-blue p-4 rounded-2xl text-center shadow"><p class="text-gray-600 text-sm">걸린 시간</p><p class="text-3xl text-blue-700" id="result-time"></p></div>
                 </div>
-
                 <h3 class="text-xl text-gray-800 mb-3 border-l-4 border-mint-500 pl-2 page-break-avoid">결과 요약표</h3>
-                <div id="table-wrapper" class="overflow-x-auto mb-6">
-                    <table class="w-full text-sm text-center border-collapse">
-                        <thead>
-                            <tr class="bg-mint-100">
-                                <th class="border p-2">번호</th>
-                                <th class="border p-2">문제</th>
-                                <th class="border p-2">입력한 답</th>
-                                <th class="border p-2">정답</th>
-                                <th class="border p-2">결과</th>
-                            </tr>
-                        </thead>
-                        <tbody id="result-table-body">
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- AI 피드백 렌더링 박스 -->
-                <div id="ai-feedback-box" class="bg-gray-50 border border-gray-200 p-5 rounded-xl markdown-body text-gray-700 text-sm leading-relaxed mb-6">
-                </div>
+                <div id="table-wrapper" class="overflow-x-auto mb-6"><table class="w-full text-sm text-center border-collapse"><thead><tr class="bg-mint-100"><th class="border p-2">번호</th><th class="border p-2">문제</th><th class="border p-2">입력한 답</th><th class="border p-2">정답</th><th class="border p-2">결과</th></tr></thead><tbody id="result-table-body"></tbody></table></div>
+                <div id="ai-feedback-box" class="bg-gray-50 border border-gray-200 p-5 rounded-xl markdown-body text-gray-700 text-sm leading-relaxed mb-6"></div>
             </div>
         </div>
-        
-        <!-- 하단 버튼바 -->
         <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-center gap-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] flex-wrap z-[60]">
             <button id="btn-retry" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-5 rounded-full shadow transition">다시 도전하기</button>
             <button id="btn-show-ranking" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-5 rounded-full shadow transition">순위표 보기</button>
-            <button id="btn-download-img" class="bg-mint-500 hover:bg-mint-700 text-white font-bold py-2 px-5 rounded-full shadow transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                이미지 다운로드
-            </button>
+            <button id="btn-download-img" class="bg-mint-500 hover:bg-mint-700 text-white font-bold py-2 px-5 rounded-full shadow transition flex items-center gap-2">이미지 다운로드</button>
         </div>
-
-        <!-- 순위표 모달 -->
         <div id="ranking-modal" class="hidden fixed inset-0 bg-black/60 z-[110] flex items-center justify-center p-4 fade-in">
             <div class="bg-white rounded-2xl w-full max-w-lg p-6 max-h-[80vh] flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl text-gray-800 font-bold border-l-4 border-mint-500 pl-2">명예의 전당 (Top 30) 🏆</h3>
-                    <button id="btn-close-ranking" class="text-gray-400 hover:text-gray-700 text-3xl leading-none">&times;</button>
-                </div>
-                <div class="overflow-y-auto">
-                    <table class="w-full text-sm text-center border-collapse">
-                        <thead class="bg-yellow-100 text-yellow-800 sticky top-0">
-                            <tr>
-                                <th class="py-2 border-b">순위</th>
-                                <th class="py-2 border-b">이름</th>
-                                <th class="py-2 border-b">정답</th>
-                                <th class="py-2 border-b">시간</th>
-                                <th class="py-2 border-b">접속 일시</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ranking-body">
-                        </tbody>
-                    </table>
-                </div>
+                <div class="flex justify-between items-center mb-4"><h3 class="text-xl text-gray-800 font-bold border-l-4 border-mint-500 pl-2">명예의 전당 (Top 30) 🏆</h3><button id="btn-close-ranking" class="text-gray-400 hover:text-gray-700 text-3xl leading-none">&times;</button></div>
+                <div class="overflow-y-auto"><table class="w-full text-sm text-center border-collapse"><thead class="bg-yellow-100 text-yellow-800 sticky top-0"><tr><th class="py-2 border-b">순위</th><th class="py-2 border-b">이름</th><th class="py-2 border-b">정답</th><th class="py-2 border-b">시간</th><th class="py-2 border-b">접속 일시</th></tr></thead><tbody id="ranking-body"></tbody></table></div>
             </div>
         </div>
     </div>
-
     <script type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-
-        let state = {
-            studentId: '', studentName: '', password: '', loginTime: '',
-            problems: [], currentIdx: 0, results: [],
-            startTime: 0, timerInterval: null,
-            aiModel: null, workingModelName: ''
-        };
-
-        const MODEL_CANDIDATES = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-pro', 'gemini-1.5-pro'];
-
-        const el = {
-            appContainer: document.getElementById('app'),
-            viewLogin: document.getElementById('view-login'),
-            viewQuiz: document.getElementById('view-quiz'),
-            viewResult: document.getElementById('view-result'),
-            viewLoading: document.getElementById('view-loading'),
-            loadingMsg: document.getElementById('loading-msg'),
-            loginForm: document.getElementById('login-form'),
-            quizForm: document.getElementById('answer-form'),
-            mathProblem: document.getElementById('math-problem'),
-            inputAnswer: document.getElementById('input-answer'),
-            feedbackIcon: document.getElementById('feedback-icon'),
-            quizProgress: document.getElementById('quiz-progress'),
-            quizTimer: document.getElementById('quiz-timer'),
-            btnRetry: document.getElementById('btn-retry'),
-            btnShowRanking: document.getElementById('btn-show-ranking'),
-            btnCloseRanking: document.getElementById('btn-close-ranking'),
-            rankingModal: document.getElementById('ranking-modal'),
-            tableWrapper: document.getElementById('table-wrapper'), 
-        };
-
-        function init() {
-            showView(el.viewLogin);
-            el.loginForm.addEventListener('submit', handleLogin);
-            el.quizForm.addEventListener('submit', handleAnswerSubmit);
-            document.getElementById('btn-download-img').addEventListener('click', downloadImage);
-            
-            el.btnRetry.addEventListener('click', startQuiz);
-            el.btnShowRanking.addEventListener('click', () => el.rankingModal.classList.remove('hidden'));
-            el.btnCloseRanking.addEventListener('click', () => el.rankingModal.classList.add('hidden'));
-        }
-
-        function showView(viewElement) {
-            [el.viewLogin, el.viewQuiz, el.viewLoading].forEach(v => v.classList.add('hidden'));
-            el.viewResult.classList.add('hidden');
-            
-            if(viewElement === el.viewResult) {
-                el.appContainer.classList.add('hidden');
-            } else {
-                el.appContainer.classList.remove('hidden');
-            }
-            viewElement.classList.remove('hidden');
-        }
-
-        function showLoading(msg) {
-            el.loadingMsg.innerText = msg;
-            showView(el.viewLoading);
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const id = document.getElementById('input-id').value;
-            const name = document.getElementById('input-name').value;
-            const pw = document.getElementById('input-pw').value;
-
-            showLoading("로그인 확인 중...");
-            try {
-                const response = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'login', studentId: id, studentName: name, password: pw })
-                });
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    state.studentId = id;
-                    state.studentName = name;
-                    state.password = pw;
-                    state.loginTime = new Date().toLocaleString();
-                    startQuiz();
-                } else {
-                    alert(result.message);
-                    showView(el.viewLogin);
-                }
-            } catch (err) {
-                alert("서버 통신 오류: " + err.message);
-                showView(el.viewLogin);
-            }
-        }
-
-        function generateProblems() {
-            const problems = [];
-            const fractions = [
-                {n: 1, d: 2}, {n: -1, d: 2}, {n: 1, d: 3}, {n: -1, d: 3},
-                {n: 2, d: 3}, {n: -2, d: 3}, {n: 1, d: 4}, {n: -1, d: 4},
-                {n: 3, d: 4}, {n: -3, d: 4}, {n: 1, d: 5}, {n: -1, d: 5},
-                {n: 2, d: 5}, {n: -2, d: 5}, {n: 3, d: 2} 
-            ];
-
-            let types = [1, 2, 3, 4, 5]; 
-            for (let i = 0; i < 10; i++) {
-                types.push(Math.floor(Math.random() * 4) + 2); 
-            }
-            for (let i = types.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [types[i], types[j]] = [types[j], types[i]];
-            }
-
-            for (let i = 0; i < 15; i++) {
-                let isFraction = Math.random() < 0.35;
-                let baseNum, baseDen, baseAbs;
-
-                if (isFraction) {
-                    let f = fractions[Math.floor(Math.random() * fractions.length)];
-                    baseNum = Math.abs(f.n); 
-                    baseDen = f.d;
-                    baseAbs = baseNum / baseDen;
-                } else {
-                    baseNum = Math.floor(Math.random() * 6) + 1; 
-                    baseDen = 1;
-                    baseAbs = baseNum;
-                }
-
-                let n;
-                if (!isFraction && (baseAbs === 5 || baseAbs === 6)) {
-                    n = Math.floor(Math.random() * 3) + 2; 
-                } else if (!isFraction && baseAbs === 1) {
-                    n = Math.floor(Math.random() * 2025) + 2;
-                } else if (isFraction) {
-                    n = Math.floor(Math.random() * 3) + 2;
-                } else {
-                    if (baseAbs === 2) {
-                        n = Math.floor(Math.random() * 9) + 2;
-                    } else {
-                        n = Math.floor(Math.random() * 4) + 2;
-                    }
-                }
-                
-                let type = types[i]; 
-
-                let answer = calculateAnswer(baseNum, baseDen, n, type);
-                let tex = getProblemTex(baseNum, baseDen, n, type);
-                
-                problems.push({ tex, answer, type, baseNum, baseDen, n });
-            }
-            return problems;
-        }
-
-        function calculateAnswer(baseNum, baseDen, n, type) {
-            let resNum = BigInt(baseNum) ** BigInt(n);
-            let resDen = BigInt(baseDen) ** BigInt(n);
-            let sign = 1n;
-            
-            if (type === 1) sign = 1n;
-            else if (type === 2) sign = (n % 2 === 0) ? 1n : -1n;
-            else if (type === 3) sign = -1n;
-            else if (type === 4) sign = (n % 2 === 0) ? -1n : 1n;
-            else if (type === 5) sign = 1n;
-
-            resNum = resNum * sign;
-            return resDen === 1n ? resNum.toString() : `${resNum.toString()}/${resDen.toString()}`;
-        }
-
-        function getProblemTex(baseNum, baseDen, n, type) {
-            let isFrac = (baseDen !== 1);
-            let fracTex = isFrac ? `\\frac{${baseNum}}{${baseDen}}` : `${baseNum}`;
-            let wrappedA = isFrac ? `\\left(${fracTex}\\right)` : fracTex;
-            
-            switch(type) {
-                case 1: return `${wrappedA}^{${n}}`;
-                case 2: return `\\left(-${fracTex}\\right)^{${n}}`;
-                case 3: return `-${wrappedA}^{${n}}`;
-                case 4: return `-\\left(-${fracTex}\\right)^{${n}}`;
-                case 5: return `-\\left(-${wrappedA}^{${n}}\\right)`;
-            }
-        }
-
-        function startQuiz() {
-            state.problems = generateProblems();
-            state.currentIdx = 0;
-            state.results = [];
-            state.startTime = Date.now();
-            
-            showView(el.viewQuiz);
-            startTimer();
-            renderProblem();
-        }
-
-        function startTimer() {
-            clearInterval(state.timerInterval);
-            state.timerInterval = setInterval(() => {
-                const diff = Math.floor((Date.now() - state.startTime) / 1000);
-                const m = String(Math.floor(diff / 60)).padStart(2, '0');
-                const s = String(diff % 60).padStart(2, '0');
-                el.quizTimer.innerText = `${m}:${s}`;
-            }, 1000);
-        }
-
-        function renderProblem() {
-            const p = state.problems[state.currentIdx];
-            el.quizProgress.innerText = `${state.currentIdx + 1} / 15`;
-            el.mathProblem.innerHTML = `\\[ ${p.tex} \\]`;
-            MathJax.typesetPromise([el.mathProblem]);
-            el.inputAnswer.value = '';
-            el.inputAnswer.focus();
-        }
-
-        function playSound(isCorrect) {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            
-            if (isCorrect) {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-                osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.5, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.5);
-            } else {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, ctx.currentTime);
-                gain.gain.setValueAtTime(0.5, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.3);
-            }
-        }
-
-        function handleAnswerSubmit(e) {
-            e.preventDefault();
-            const userAns = el.inputAnswer.value.replace(/\s/g, ''); 
-            if(!userAns) return;
-
-            const p = state.problems[state.currentIdx];
-            const isCorrect = (userAns === p.answer);
-            
-            state.results.push({
-                num: state.currentIdx + 1,
-                tex: p.tex,
-                user: userAns,
-                answer: p.answer,
-                correct: isCorrect
-            });
-
-            playSound(isCorrect);
-            el.feedbackIcon.innerHTML = isCorrect ? '✅' : '❌';
-            el.feedbackIcon.classList.remove('opacity-0');
-            el.feedbackIcon.classList.add('opacity-100');
-            
-            setTimeout(() => {
-                el.feedbackIcon.classList.remove('opacity-100');
-                el.feedbackIcon.classList.add('opacity-0');
-                
-                state.currentIdx++;
-                if (state.currentIdx < 15) {
-                    renderProblem();
-                } else {
-                    finishQuiz();
-                }
-            }, 600);
-        }
-
-        async function finishQuiz() {
-            clearInterval(state.timerInterval);
-            const timeTaken = Math.floor((Date.now() - state.startTime) / 1000);
-            const correctCount = state.results.filter(r => r.correct).length;
-            
-            showView(el.viewResult);
-            window.scrollTo(0, 0);
-
-            const overlay = document.createElement('div');
-            overlay.id = 'result-overlay';
-            overlay.className = 'fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center fade-in';
-            overlay.innerHTML = `
-                <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-mint-500 mb-4"></div>
-                <h2 class="text-xl text-mint-700 font-bold text-center" id="overlay-msg">선생님의 피드백을<br>가져오는 중입니다... ✍️</h2>
-            `;
-            document.body.appendChild(overlay);
-            const updateMsg = (msg) => document.getElementById('overlay-msg').innerHTML = msg;
-
-            try {
-                renderResultUI(correctCount, timeTaken);
-                await MathJax.typesetPromise();
-                
-                const feedbackText = await getAIFeedback(state.results);
-                document.getElementById('ai-feedback-box').innerHTML = marked.parse(feedbackText);
-                await MathJax.typesetPromise([document.getElementById('ai-feedback-box')]); 
-
-                updateMsg("결과를 서버에 저장하고<br>명예의 전당을 갱신 중입니다... 💾");
-
-                const element = document.getElementById('pdf-content');
-                
-                element.classList.remove('shadow-sm', 'rounded-xl');
-                element.style.padding = '40px';
-                element.style.backgroundColor = '#ffffff';
-
-                if (el.tableWrapper) el.tableWrapper.style.overflow = 'visible';
-
-                const fullHeight = element.scrollHeight;
-                const fullWidth = element.scrollWidth;
-
-                await new Promise(r => setTimeout(r, 300));
-
-                const dataUrl = await window.htmlToImage.toJpeg(element, { 
-                    quality: 0.95, 
-                    pixelRatio: 2, 
-                    backgroundColor: '#ffffff',
-                    width: fullWidth,   
-                    height: fullHeight  
-                });
-                
-                element.classList.add('shadow-sm', 'rounded-xl');
-                element.style.padding = '';
-                
-                if (el.tableWrapper) el.tableWrapper.style.overflow = '';
-
-                // 서버 전송용 PDF 생성
-                const { jsPDF } = window.jspdf;
-                const img = new Image();
-                img.src = dataUrl;
-                await new Promise(resolve => { img.onload = resolve; });
-
-                const imgWidth = 210;
-                const imgHeight = (img.height * imgWidth) / img.width;
-                const pdf = new jsPDF('p', 'mm', [imgWidth, imgHeight]); 
-                pdf.addImage(dataUrl, 'JPEG', 0, 0, imgWidth, imgHeight);
-                const base64Data = pdf.output('datauristring').split(',')[1];
-
-                const saveRes = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        action: 'saveResult',
-                        studentId: state.studentId,
-                        studentName: state.studentName,
-                        correctCount: correctCount,
-                        timeTaken: timeTaken,
-                        loginTime: state.loginTime,
-                        pdfBase64: base64Data
-                    })
-                });
-                await saveRes.json();
-                
-                const rankRes = await fetch(GAS_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'getRanking' })
-                });
-                const rankData = await rankRes.json();
-                renderRanking(rankData.ranking);
-
-            } catch (err) {
-                console.error("저장 오류:", err);
-                alert("일부 처리 중 오류가 발생했습니다: " + err.message);
-            } finally {
-                if (el.tableWrapper) el.tableWrapper.style.overflow = '';
-                if (document.getElementById('result-overlay')) {
-                    document.body.removeChild(document.getElementById('result-overlay'));
-                }
-            }
-        }
-
-        function renderResultUI(correctCount, timeTaken) {
-            const m = String(Math.floor(timeTaken / 60)).padStart(2, '0');
-            const s = String(timeTaken % 60).padStart(2, '0');
-            
-            document.getElementById('result-user-info').innerText = 
-                `${state.studentId} ${state.studentName} | 로그인: ${state.loginTime}`;
-            document.getElementById('result-correct').innerText = correctCount;
-            document.getElementById('result-time').innerText = `${m}분 ${s}초`;
-
-            const tbody = document.getElementById('result-table-body');
-            tbody.innerHTML = '';
-            state.results.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="border p-2">${r.num}</td>
-                    <td class="border p-2 text-lg">\\( ${r.tex} \\)</td>
-                    <td class="border p-2 font-mono ${r.correct ? 'text-green-600' : 'text-red-600'}">${r.user}</td>
-                    <td class="border p-2 font-mono text-blue-600">${r.answer}</td>
-                    <td class="border p-2 font-bold">${r.correct ? '✅' : '❌'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderRanking(ranking) {
-            const tbody = document.getElementById('ranking-body');
-            tbody.innerHTML = '';
-            ranking.forEach(r => {
-                const m = String(Math.floor(r.timeTaken / 60)).padStart(2, '0');
-                const s = String(r.timeTaken % 60).padStart(2, '0');
-                
-                const tr = document.createElement('tr');
-                if(r.studentId == state.studentId) tr.classList.add('bg-yellow-50', 'font-bold');
-                
-                tr.innerHTML = `
-                    <td class="border-b py-2">${r.rank}등</td>
-                    <td class="border-b py-2">${r.studentName}</td>
-                    <td class="border-b py-2 text-green-600">${r.correctCount}</td>
-                    <td class="border-b py-2 text-gray-500">${m}:${s}</td>
-                    <td class="border-b py-2 text-gray-400 text-xs">${r.loginTime || '-'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        async function getAIFeedback(results) {
-            const genAI = new GoogleGenerativeAI(API_KEY);
-            let modelName = state.workingModelName;
-
-            if (!modelName) {
-                for (const cand of MODEL_CANDIDATES) {
-                    try {
-                        const testModel = genAI.getGenerativeModel({ model: cand });
-                        const testRes = await testModel.generateContent("Hi");
-                        if (testRes.response.text()) {
-                            modelName = cand;
-                            state.workingModelName = cand;
-                            break;
-                        }
-                    } catch (e) {
-                        console.warn(`${cand} failed:`, e);
-                    }
-                }
-            }
-            if (!modelName) throw new Error("사용 가능한 AI 모델을 찾을 수 없습니다.");
-
-            const model = genAI.getGenerativeModel({ model: modelName });
-            
-            const wrongAnswers = results.filter(r => !r.correct).map(r => 
-                `문제: ${r.tex}, 정답: ${r.answer}, 학생의 답: ${r.user}`
-            ).join('\n');
-
-            const prompt = `당신은 친절하고 따뜻한 중학교 수학 선생님입니다. 
-학생 이름은 '${state.studentName}' 입니다.
-학생이 '정수와 유리수의 거듭제곱' 15문제 중 ${results.filter(r=>r.correct).length}문제를 맞혔습니다.
-
-[학생이 틀린 문제 목록]
-${wrongAnswers ? wrongAnswers : '틀린 문제가 없습니다! 완벽합니다.'}
-
-다음 2가지 내용을 반드시 "하나의 이어지는 이야기 형식(서술형 줄글)"으로 작성해주세요.
-
-[매우 중요한 작성 규칙]
-1. 절대 개조식, 번호 매기기(①, 1., 2.), 글머리 기호(-, *)를 사용하지 마세요! 오직 자연스러운 줄글(문장)로만 작성해야 합니다.
-2. 문장 중간이나 수식 앞뒤에서 절대로 엔터(줄바꿈)를 치지 마세요. 각 항목은 하나의 큰 단락으로만 구성해야 합니다.
-3. 수식은 무조건 문장 안에 포함되는 인라인 수식인 $수식$ 형태만 사용하세요. ($$수식$$이나 \\[수식\\] 절대 사용 금지)
-4. 곱하기 기호는 * 대신 반드시 $\\times$ 기호를 사용하세요.
-
-[내용 1: 총평]
-학생의 이름(${state.studentName})을 다정하게 부르며 칭찬하고 격려하는 따뜻한 말
-
-[내용 2: 틀린 문제 설명]
-틀린 문제들에 대해 부호 결정, 분수의 거듭제곱 등 핵심 원리를 설명. (틀린 게 없다면 더 큰 칭찬)`;
-
-            const result = await model.generateContent(prompt);
-            let cleanText = result.response.text();
-            
-            cleanText = cleanText.replace(/\$\$/g, '$');
-            cleanText = cleanText.replace(/\\\[/g, '$').replace(/\\\]/g, '$');
-            
-            cleanText = cleanText.replace(/^[\-\*\+]\s+/gm, ''); 
-            cleanText = cleanText.replace(/^\d+\.\s+/gm, '');
-            cleanText = cleanText.replace(/^[①②③④⑤]\s*/gm, '');
-
-            cleanText = cleanText.replace(/\[내용 1: 총평\]/g, '### 🌟 선생님의 총평\n\n');
-            cleanText = cleanText.replace(/\[내용 2: 틀린 문제 설명\]/g, '\n\n### 💡 틀린 문제 설명\n\n');
-
-            cleanText = cleanText.replace(/\n{2,}/g, '@@DOUBLE_ENTER@@'); 
-            cleanText = cleanText.replace(/\n/g, ' '); 
-            cleanText = cleanText.replace(/@@DOUBLE_ENTER@@/g, '\n\n'); 
-            
-            // 💡 [해결 핵심 코드] 수식 기호($) 안쪽에 생긴 띄어쓰기를 완벽하게 제거
-            // 이 3줄 덕분에 깃허브에서도 에러 없이 MathJax가 수식을 완벽하게 렌더링하게 됩니다!
-            cleanText = cleanText.replace(/\$([^\$]+)\$/g, (match, p1) => {
-                return '$' + p1.trim() + '$';
-            });
-            
-            return cleanText;
-        }
-
-        async function downloadImage() {
-            const btn = document.getElementById('btn-download-img');
-            const originalText = btn.innerHTML;
-            
-            btn.innerHTML = '다운로드 중...';
-            btn.disabled = true;
-            
-            window.scrollTo(0, 0); 
-            const element = document.getElementById('pdf-content');
-            
-            try {
-                element.classList.remove('shadow-sm', 'rounded-xl');
-                element.style.padding = '40px';
-                element.style.backgroundColor = '#ffffff';
-
-                if (el.tableWrapper) el.tableWrapper.style.overflow = 'visible';
-
-                const fullHeight = element.scrollHeight;
-                const fullWidth = element.scrollWidth;
-
-                await new Promise(r => setTimeout(r, 300));
-
-                const dataUrl = await window.htmlToImage.toPng(element, { 
-                    quality: 1.0, 
-                    pixelRatio: 2, 
-                    backgroundColor: '#ffffff',
-                    width: fullWidth,   
-                    height: fullHeight  
-                });
-                
-                element.classList.add('shadow-sm', 'rounded-xl');
-                element.style.padding = '';
-                
-                if (el.tableWrapper) el.tableWrapper.style.overflow = '';
-                
-                const link = document.createElement('a');
-                link.download = `${state.studentId}_${state.studentName}_결과.png`;
-                link.href = dataUrl;
-                link.click();
-                
-            } catch(e) {
-                console.error(e);
-                alert('이미지 다운로드에 실패했습니다.');
-            } finally {
-                if (el.tableWrapper) el.tableWrapper.style.overflow = '';
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }
-
+        let state = { studentId: '', studentName: '', password: '', loginTime: '', problems: [], currentIdx: 0, results: [], startTime: 0, timerInterval: null };
+        const el = { appContainer: document.getElementById('app'), viewLogin: document.getElementById('view-login'), viewQuiz: document.getElementById('view-quiz'), viewResult: document.getElementById('view-result'), viewLoading: document.getElementById('view-loading'), loadingMsg: document.getElementById('loading-msg'), loginForm: document.getElementById('login-form'), quizForm: document.getElementById('answer-form'), mathProblem: document.getElementById('math-problem'), inputAnswer: document.getElementById('input-answer'), feedbackIcon: document.getElementById('feedback-icon'), quizProgress: document.getElementById('quiz-progress'), quizTimer: document.getElementById('quiz-timer'), btnRetry: document.getElementById('btn-retry'), btnShowRanking: document.getElementById('btn-show-ranking'), btnCloseRanking: document.getElementById('btn-close-ranking'), rankingModal: document.getElementById('ranking-modal'), tableWrapper: document.getElementById('table-wrapper'), };
+        function init() { showView(el.viewLogin); el.loginForm.addEventListener('submit', handleLogin); el.quizForm.addEventListener('submit', handleAnswerSubmit); document.getElementById('btn-download-img').addEventListener('click', downloadImage); el.btnRetry.addEventListener('click', startQuiz); el.btnShowRanking.addEventListener('click', () => el.rankingModal.classList.remove('hidden')); el.btnCloseRanking.addEventListener('click', () => el.rankingModal.classList.add('hidden')); }
+        function showView(viewElement) { [el.viewLogin, el.viewQuiz, el.viewLoading].forEach(v => v.classList.add('hidden')); el.viewResult.classList.add('hidden'); if(viewElement === el.viewResult) { el.appContainer.classList.add('hidden'); } else { el.appContainer.classList.remove('hidden'); } viewElement.classList.remove('hidden'); }
+        function showLoading(msg) { el.loadingMsg.innerText = msg; showView(el.viewLoading); }
+        async function handleLogin(e) { e.preventDefault(); const id = document.getElementById('input-id').value; const name = document.getElementById('input-name').value; const pw = document.getElementById('input-pw').value; showLoading("로그인 확인 중..."); try { const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'login', studentId: id, studentName: name, password: pw }) }); const result = await response.json(); if (result.status === 'success') { state.studentId = id; state.studentName = name; state.password = pw; state.loginTime = new Date().toLocaleString(); startQuiz(); } else { alert(result.message); showView(el.viewLogin); } } catch (err) { alert("서버 통신 오류: " + err.message); showView(el.viewLogin); } }
+        function generateProblems() { const problems = []; const fractions = [{n: 1, d: 2}, {n: -1, d: 2}, {n: 1, d: 3}, {n: -1, d: 3}, {n: 2, d: 3}, {n: -2, d: 3}, {n: 1, d: 4}, {n: -1, d: 4}, {n: 3, d: 4}, {n: -3, d: 4}, {n: 1, d: 5}, {n: -1, d: 5}, {n: 2, d: 5}, {n: -2, d: 5}, {n: 3, d: 2}]; let types = [1, 2, 3, 4, 5]; for (let i = 0; i < 10; i++) types.push(Math.floor(Math.random() * 4) + 2); for (let i = types.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [types[i], types[j]] = [types[j], types[i]]; } for (let i = 0; i < 15; i++) { let isFraction = Math.random() < 0.35; let baseNum, baseDen, baseAbs; if (isFraction) { let f = fractions[Math.floor(Math.random() * fractions.length)]; baseNum = Math.abs(f.n); baseDen = f.d; baseAbs = baseNum / baseDen; } else { baseNum = Math.floor(Math.random() * 6) + 1; baseDen = 1; baseAbs = baseNum; } let n; if (!isFraction && (baseAbs === 5 || baseAbs === 6)) n = Math.floor(Math.random() * 3) + 2; else if (!isFraction && baseAbs === 1) n = Math.floor(Math.random() * 2025) + 2; else if (isFraction) n = Math.floor(Math.random() * 3) + 2; else { if (baseAbs === 2) n = Math.floor(Math.random() * 9) + 2; else n = Math.floor(Math.random() * 4) + 2; } let type = types[i]; let answer = calculateAnswer(baseNum, baseDen, n, type); let tex = getProblemTex(baseNum, baseDen, n, type); problems.push({ tex, answer, type, baseNum, baseDen, n }); } return problems; }
+        function calculateAnswer(baseNum, baseDen, n, type) { let resNum = BigInt(baseNum) ** BigInt(n); let resDen = BigInt(baseDen) ** BigInt(n); let sign = 1n; if (type === 1) sign = 1n; else if (type === 2) sign = (n % 2 === 0) ? 1n : -1n; else if (type === 3) sign = -1n; else if (type === 4) sign = (n % 2 === 0) ? -1n : 1n; else if (type === 5) sign = 1n; resNum = resNum * sign; return resDen === 1n ? resNum.toString() : `${resNum.toString()}/${resDen.toString()}`; }
+        function getProblemTex(baseNum, baseDen, n, type) { let isFrac = (baseDen !== 1); let fracTex = isFrac ? `\\frac{${baseNum}}{${baseDen}}` : `${baseNum}`; let wrappedA = isFrac ? `\\left(${fracTex}\\right)` : fracTex; switch(type) { case 1: return `${wrappedA}^{${n}}`; case 2: return `\\left(-${fracTex}\\right)^{${n}}`; case 3: return `-${wrappedA}^{${n}}`; case 4: return `-\\left(-${fracTex}\\right)^{${n}}`; case 5: return `-\\left(-${wrappedA}^{${n}}\\right)`; } }
+        function startQuiz() { state.problems = generateProblems(); state.currentIdx = 0; state.results = []; state.startTime = Date.now(); showView(el.viewQuiz); startTimer(); renderProblem(); }
+        function startTimer() { clearInterval(state.timerInterval); state.timerInterval = setInterval(() => { const diff = Math.floor((Date.now() - state.startTime) / 1000); const m = String(Math.floor(diff / 60)).padStart(2, '0'); const s = String(diff % 60).padStart(2, '0'); el.quizTimer.innerText = `${m}:${s}`; }, 1000); }
+        function renderProblem() { const p = state.problems[state.currentIdx]; el.quizProgress.innerText = `${state.currentIdx + 1} / 15`; el.mathProblem.innerHTML = `\\[ ${p.tex} \\]`; MathJax.typesetPromise([el.mathProblem]); el.inputAnswer.value = ''; el.inputAnswer.focus(); }
+        function playSound(isCorrect) { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); if (isCorrect) { osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, ctx.currentTime); osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5); osc.start(); osc.stop(ctx.currentTime + 0.5); } else { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, ctx.currentTime); gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3); osc.start(); osc.stop(ctx.currentTime + 0.3); } }
+        function handleAnswerSubmit(e) { e.preventDefault(); const userAns = el.inputAnswer.value.replace(/\s/g, ''); if(!userAns) return; const p = state.problems[state.currentIdx]; const isCorrect = (userAns === p.answer); state.results.push({ num: state.currentIdx + 1, tex: p.tex, user: userAns, answer: p.answer, correct: isCorrect }); playSound(isCorrect); el.feedbackIcon.innerHTML = isCorrect ? '✅' : '❌'; el.feedbackIcon.classList.remove('opacity-0'); el.feedbackIcon.classList.add('opacity-100'); setTimeout(() => { el.feedbackIcon.classList.remove('opacity-100'); el.feedbackIcon.classList.add('opacity-0'); state.currentIdx++; if (state.currentIdx < 15) renderProblem(); else finishQuiz(); }, 600); }
+        async function finishQuiz() { clearInterval(state.timerInterval); const timeTaken = Math.floor((Date.now() - state.startTime) / 1000); const correctCount = state.results.filter(r => r.correct).length; showView(el.viewResult); window.scrollTo(0, 0); const overlay = document.createElement('div'); overlay.id = 'result-overlay'; overlay.className = 'fixed inset-0 bg-white/90 z-[100] flex flex-col items-center justify-center fade-in'; overlay.innerHTML = `<div class="animate-spin rounded-full h-16 w-16 border-b-4 border-mint-500 mb-4"></div><h2 class="text-xl text-mint-700 font-bold text-center" id="overlay-msg">피드백 가져오는 중...</h2>`; document.body.appendChild(overlay); try { renderResultUI(correctCount, timeTaken); await MathJax.typesetPromise(); const feedbackText = await getAIFeedback(state.results); document.getElementById('ai-feedback-box').innerHTML = marked.parse(feedbackText); await MathJax.typesetPromise([document.getElementById('ai-feedback-box')]); const element = document.getElementById('pdf-content'); element.classList.remove('shadow-sm', 'rounded-xl'); element.style.padding = '40px'; element.style.backgroundColor = '#ffffff'; if (el.tableWrapper) el.tableWrapper.style.overflow = 'visible'; await new Promise(r => setTimeout(r, 300)); const dataUrl = await window.htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2, backgroundColor: '#ffffff', width: element.scrollWidth, height: element.scrollHeight }); element.classList.add('shadow-sm', 'rounded-xl'); element.style.padding = ''; if (el.tableWrapper) el.tableWrapper.style.overflow = ''; const { jsPDF } = window.jspdf; const img = new Image(); img.src = dataUrl; await new Promise(resolve => { img.onload = resolve; }); const pdf = new jsPDF('p', 'mm', [210, (img.height * 210) / img.width]); pdf.addImage(dataUrl, 'JPEG', 0, 0, 210, (img.height * 210) / img.width); const base64Data = pdf.output('datauristring').split(',')[1]; await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'saveResult', studentId: state.studentId, studentName: state.studentName, correctCount: correctCount, timeTaken: timeTaken, loginTime: state.loginTime, pdfBase64: base64Data }) }); const rankRes = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getRanking' }) }); const rankData = await rankRes.json(); renderRanking(rankData.ranking); } catch (err) { alert("오류 발생: " + err.message); } finally { if (document.getElementById('result-overlay')) document.body.removeChild(document.getElementById('result-overlay')); } }
+        function renderResultUI(correctCount, timeTaken) { const m = String(Math.floor(timeTaken / 60)).padStart(2, '0'); const s = String(timeTaken % 60).padStart(2, '0'); document.getElementById('result-user-info').innerText = `${state.studentId} ${state.studentName} | ${state.loginTime}`; document.getElementById('result-correct').innerText = correctCount; document.getElementById('result-time').innerText = `${m}분 ${s}초`; const tbody = document.getElementById('result-table-body'); tbody.innerHTML = ''; state.results.forEach(r => { const tr = document.createElement('tr'); tr.innerHTML = `<td class="border p-2">${r.num}</td><td class="border p-2 text-lg">\\( ${r.tex} \\)</td><td class="border p-2 font-mono ${r.correct ? 'text-green-600' : 'text-red-600'}">${r.user}</td><td class="border p-2 font-mono text-blue-600">${r.answer}</td><td class="border p-2 font-bold">${r.correct ? '✅' : '❌'}</td>`; tbody.appendChild(tr); }); }
+        function renderRanking(ranking) { const tbody = document.getElementById('ranking-body'); tbody.innerHTML = ''; ranking.forEach(r => { const tr = document.createElement('tr'); if(r.studentId == state.studentId) tr.classList.add('bg-yellow-50', 'font-bold'); tr.innerHTML = `<td class="border-b py-2">${r.rank}등</td><td class="border-b py-2">${r.studentName}</td><td class="border-b py-2 text-green-600">${r.correctCount}</td><td class="border-b py-2 text-gray-500">${String(Math.floor(r.timeTaken/60)).padStart(2,'0')}:${String(r.timeTaken%60).padStart(2,'0')}</td><td class="border-b py-2 text-gray-400 text-xs">${r.loginTime || '-'}</td>`; tbody.appendChild(tr); }); }
+        async function getAIFeedback(results) { const wrongAnswers = results.filter(r => !r.correct).map(r => `문제: ${r.tex}, 정답: ${r.answer}, 학생의 답: ${r.user}`).join('\n'); try { const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'getFeedback', studentName: state.studentName, correctCount: results.filter(r=>r.correct).length, wrongAnswers: wrongAnswers }) }); const data = await response.json(); return data.feedback.replace(/\$([^\$]+)\$/g, (m, p) => '$' + p.trim() + '$'); } catch (err) { return "피드백 생성 실패"; } }
+        async function downloadImage() { const element = document.getElementById('pdf-content'); const dataUrl = await window.htmlToImage.toPng(element, { quality: 1.0, pixelRatio: 2, backgroundColor: '#ffffff', width: element.scrollWidth, height: element.scrollHeight }); const link = document.createElement('a'); link.download = `${state.studentId}_${state.studentName}_결과.png`; link.href = dataUrl; link.click(); }
         window.onload = init;
-
     </script>
 </body>
 </html>
