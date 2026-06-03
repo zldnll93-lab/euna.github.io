@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>정수 연산 마스터</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 클라이언트 측 PDF 생성을 위한 라이브러리 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
+    .hidden { display: none; }
+    
+    /* PDF 출력용 컨테이너 (자동 맞춤 및 잘림 완벽 방지) */
+    #pdf-wrapper {
+      display: none; /* 평소에는 완전히 숨김 */
+    }
+    
+    #pdf-container { 
+      width: 650px; /* 💡 너비를 700px에서 650px로 더 줄여 여백 공간을 추가 확보 */
+      background: white; 
+      padding: 15px; /* 💡 패딩을 줄여 표가 차지하는 가로 공간 확보 */
+      color: #000;
+      box-sizing: border-box;
+      margin: 0 auto;
+    }
+    .pdf-header-title { text-align: center; color: #1e3a8a; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
+    .pdf-info-box { margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
+    
+    .pdf-table { width: 100%; border-collapse: collapse; margin-top: 5px; color: #000; table-layout: fixed; }
+    .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; font-size: 11px; } /* 💡 폰트와 패딩을 미세 조정 */
+    .pdf-table th { background-color: #e5e7eb; font-weight: bold; }
+    .pdf-table tr { page-break-inside: avoid; break-inside: avoid; }
+    .pdf-table .col-res-o { color: #15803d; font-weight: bold; font-size: 12px; }
+    .pdf-table .col-res-x { color: #dc2626; font-weight: bold; font-size: 12px; }
+    
+    .pdf-feedback-box { 
+      margin-top: 15px; 
+      padding: 10px; 
+      background-color: #f8fafc; 
+      border: 1px solid #cbd5e1; 
+      border-radius: 8px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .pdf-feedback-box h3 { color: #1e40af; margin-top:0; border-bottom: 2px solid #1e40af; padding-bottom: 5px; font-size: 14px; }
+    .pdf-feedback-content { line-height: 1.4; font-size: 12px; white-space: pre-wrap; margin-top: 5px;}
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <!-- 로그인 화면 -->
+  <div id="login-screen" class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">정수 연산 마스터 로그인</h1>
+    <div class="space-y-4">
+      <input type="text" id="student-id" placeholder="학번 (예: 10101)" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="text" id="student-name" placeholder="이름" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="password" id="student-pw" placeholder="비밀번호" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">로그인 및 시작</button>
+    </div>
+    <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden"></p>
+  </div>
+
+  <!-- 게임 화면 -->
+  <div id="game-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
+    <div class="flex justify-between items-center mb-6">
+      <span id="question-counter" class="text-lg font-bold text-gray-600">문제: 1 / 15</span>
+      <span id="timer-display" class="text-lg font-bold text-red-500">시간: 0.0초</span>
+    </div>
+    <div class="text-center my-10">
+      <div id="question-text" class="text-5xl font-black tracking-widest text-gray-800"></div>
+    </div>
+    <div class="flex gap-4">
+      <input type="number" id="answer-input" placeholder="정답 입력" class="flex-1 text-2xl text-center px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" onkeypress="if(event.key === 'Enter') submitAnswer()">
+      <button onclick="submitAnswer()" class="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 text-xl transition">입력</button>
+    </div>
+  </div>
+
+  <!-- 로딩 화면 -->
+  <div id="loading-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-solid mx-auto mb-4"></div>
+    <h2 class="text-xl font-bold text-gray-700">채점 및 피드백 생성 중...</h2>
+    <p class="text-gray-500 mt-2">잠시만 기다려주세요.</p>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div id="result-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">퀴즈 결과</h1>
+    
+    <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg mb-6">
+      <div class="text-gray-600">학번: <span id="res-id" class="font-bold text-black"></span></div>
+      <div class="text-gray-600">이름: <span id="res-name" class="font-bold text-black"></span></div>
+      <div class="text-gray-600">맞힌 개수: <span id="res-score" class="font-bold text-blue-600 text-xl"></span> / 15</div>
+      <div class="text-gray-600">걸린 시간: <span id="res-time" class="font-bold text-red-500 text-xl"></span>초</div>
+      <div class="text-gray-600 col-span-2 text-sm">접속 시간: <span id="res-login-time"></span></div>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 max-h-48 overflow-y-auto">
+      <h3 class="font-bold text-blue-800 mb-2">👨‍🏫 선생님의 피드백</h3>
+      <p id="res-feedback" class="text-gray-700 leading-relaxed text-sm whitespace-pre-wrap"></p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <button onclick="downloadPdf()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">📄 정오답 PDF 다운로드</button>
+      <button onclick="showLeaderboard()" class="w-full bg-yellow-500 text-white font-bold py-3 rounded-lg hover:bg-yellow-600 transition">🏆 명예의 전당 보기</button>
+    </div>
+  </div>
+
+  <!-- 명예의 전당 화면 -->
+  <div id="leaderboard-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-3xl">
+    <h1 class="text-3xl font-bold text-center text-yellow-600 mb-6">🏆 명예의 전당 (Top 30)</h1>
+    <div class="overflow-y-auto max-h-96 border rounded-lg">
+      <table class="w-full text-center">
+        <thead class="bg-gray-100 sticky top-0">
+          <tr>
+            <th class="py-2">순위</th>
+            <th class="py-2">학번</th>
+            <th class="py-2">이름</th>
+            <th class="py-2">맞힌 개수</th>
+            <th class="py-2">걸린 시간</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body" class="divide-y"></tbody>
+      </table>
+    </div>
+    <div class="mt-6 text-center">
+      <button onclick="location.reload()" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition">처음으로</button>
+    </div>
+  </div>
+
+  <!-- PDF 생성용 템플릿 -->
+  <div id="pdf-wrapper">
+    <div id="pdf-container">
+      <div class="pdf-header-title">정수 연산 퀴즈 결과 분석표</div>
+      <div class="pdf-info-box">
+        <p><strong>학번:</strong> <span id="pdf-id"></span> | <strong>이름:</strong> <span id="pdf-name"></span></p>
+        <p><strong>맞힌 개수:</strong> <span id="pdf-score"></span>/15 | <strong>걸린 시간:</strong> <span id="pdf-time"></span>초 | <strong>로그인 시간:</strong> <span id="pdf-login"></span></p>
+      </div>
+      
+      <!-- 15문제 표 출력 영역 -->
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th style="width: 15%;">번호</th>
+            <th style="width: 35%;">문제</th>
+            <th style="width: 20%;">학생의 답</th>
+            <th style="width: 20%;">정답</th>
+            <th style="width: 10%;">결과</th>
+          </tr>
+        </thead>
+        <tbody id="pdf-table-body"></tbody>
+      </table>
+      
+      <!-- AI 수학 피드백 영역 -->
+      <div class="pdf-feedback-box">
+        <h3>👨‍🏫 선생님의 맞춤형 피드백</h3>
+        <div id="pdf-feedback" class="pdf-feedback-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwWgVYXrwPFEzx8NBszn8R6I6hkil86GkrBd1o0C_No4aQH1TUvFU9OK4An24GEclua5g/exec';
+
+    async function apiCall(payload) {
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        return await response.json();
+      } catch (e) {
+        console.error(e);
+        return { success: false, message: '통신 오류가 발생했습니다.' };
+      }
+    }
+
+    let userInfo = { id: '', name: '', loginTime: '' };
+    let questions = [];
+    let currentQIndex = 0;
+    let score = 0;
+    let startTime, timerInterval;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playTone(freq, type, duration) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      osc.type = type;
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      osc.start();
+      gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+      osc.stop(audioCtx.currentTime + duration);
+    }
+    function playCorrect() { playTone(600, 'sine', 0.1); setTimeout(() => playTone(800, 'sine', 0.15), 100); }
+    function playIncorrect() { playTone(250, 'sawtooth', 0.3); }
+
+    function showScreen(id) {
+      ['login-screen', 'game-screen', 'loading-screen', 'result-screen', 'leaderboard-screen'].forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function login() {
+      const id = document.getElementById('student-id').value.trim();
+      const name = document.getElementById('student-name').value.trim();
+      const pw = document.getElementById('student-pw').value.trim();
+      const errEl = document.getElementById('login-error');
+
+      if (!id || !name || !pw) {
+        errEl.innerText = '모든 필드를 입력해주세요.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      errEl.innerText = '확인 중...';
+      errEl.classList.remove('hidden');
+      errEl.classList.replace('text-red-500', 'text-blue-500');
+
+      apiCall({ action: 'verifyLogin', id, name, pw }).then((res) => {
+        if (res.success) {
+          userInfo = { id, name, loginTime: new Date().toLocaleString() };
+          startGame();
+        } else {
+          errEl.innerText = res.message;
+          errEl.classList.replace('text-blue-500', 'text-red-500');
+        }
+      });
+    }
+
+    function startGame() {
+      generateQuestions();
+      currentQIndex = 0;
+      score = 0;
+      showScreen('game-screen');
+      startTime = Date.now();
+      
+      timerInterval = setInterval(() => {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        document.getElementById('timer-display').innerText = `시간: ${elapsed}초`;
+      }, 100);
+
+      renderQuestion();
+      document.getElementById('answer-input').focus();
+    }
+
+    function generateQuestions() {
+      questions = [];
+      let posPosCount = 0;
+      while (questions.length < 15) {
+        let a = Math.floor(Math.random() * 41) - 20; 
+        let b = Math.floor(Math.random() * 41) - 20;
+        let op = Math.random() < 0.5 ? '+' : '-';
+
+        let strA = a < 0 ? `(${a})` : `${a}`;
+        let strB = b < 0 ? `(${b})` : `${b}`;
+        
+        let isPosPos = (a >= 0 && b >= 0);
+        if (isPosPos) {
+          if (posPosCount >= 2) continue; 
+          posPosCount++;
+        }
+
+        let answer = (op === '+') ? (a + b) : (a - b);
+        let qText = `${strA} ${op} ${strB} = ?`;
+        questions.push({ a, b, op, text: qText, answer: answer, userAns: null, isCorrect: false });
+      }
+    }
+
+    function renderQuestion() {
+      document.getElementById('question-counter').innerText = `문제: ${currentQIndex + 1} / 15`;
+      document.getElementById('question-text').innerText = questions[currentQIndex].text.replace(' = ?', '');
+      document.getElementById('answer-input').value = '';
+    }
+
+    function submitAnswer() {
+      const inputEl = document.getElementById('answer-input');
+      const userVal = parseInt(inputEl.value);
+      
+      if (isNaN(userVal)) return;
+
+      const q = questions[currentQIndex];
+      q.userAns = userVal;
+      
+      if (userVal === q.answer) {
+        q.isCorrect = true;
+        score++;
+        playCorrect();
+      } else {
+        q.isCorrect = false;
+        playIncorrect();
+      }
+
+      currentQIndex++;
+      if (currentQIndex < 15) {
+        renderQuestion();
+        inputEl.focus();
+      } else {
+        endGame();
+      }
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
+      showScreen('loading-screen');
+
+      document.getElementById('res-id').innerText = userInfo.id;
+      document.getElementById('res-name').innerText = userInfo.name;
+      document.getElementById('res-score').innerText = score;
+      document.getElementById('res-time').innerText = totalTime;
+      document.getElementById('res-login-time').innerText = userInfo.loginTime;
+
+      document.getElementById('pdf-id').innerText = userInfo.id;
+      document.getElementById('pdf-name').innerText = userInfo.name;
+      document.getElementById('pdf-score').innerText = score;
+      document.getElementById('pdf-time').innerText = totalTime;
+      document.getElementById('pdf-login').innerText = userInfo.loginTime;
+
+      let wrongList = [];
+      let tbodyHtml = '';
+      questions.forEach((q, idx) => {
+        if (!q.isCorrect) wrongList.push(`${q.text.replace(' = ?','')} (학생답:${q.userAns}, 정답:${q.answer})`);
+        
+        let resHtml = q.isCorrect ? '<span class="col-res-o">O</span>' : '<span class="col-res-x">X</span>';
+        tbodyHtml += `<tr>
+          <td>${idx + 1}</td>
+          <td>${q.text.replace(' = ?','')}</td>
+          <td>${q.userAns}</td>
+          <td>${q.answer}</td>
+          <td>${resHtml}</td>
+        </tr>`;
+      });
+      document.getElementById('pdf-table-body').innerHTML = tbodyHtml;
+      
+      const wrongListStr = wrongList.length > 0 ? wrongList.join(", ") : "틀린 문제가 없습니다. 완벽합니다!";
+
+      apiCall({ action: 'getFeedback', score: score, time: totalTime, wrongListStr: wrongListStr }).then((res) => {
+        let feedback = res.feedback || res.message;
+        if (feedback) {
+          feedback = feedback.replace(/\[학생 이름\]/g, userInfo.name);
+          feedback = feedback.replace(/\[학생이름\]/g, userInfo.name);
+          const lastChar = userInfo.name.charCodeAt(userInfo.name.length - 1);
+          const hasBatchim = (lastChar - 0xac00) % 28 > 0;
+          const josa = hasBatchim ? '아' : '야';
+          feedback = feedback.replace(/oo야/g, userInfo.name + josa);
+          feedback = feedback.replace(/oo아/g, userInfo.name + josa);
+          feedback = feedback.replace(/oo/g, userInfo.name);
+          feedback = feedback.replace(/\*\*/g, ''); 
+          feedback = feedback.replace(/\$/g, '');   
+          feedback = feedback.replace(/`/g, '');    
+          feedback = feedback.replace(/\\/g, '');   
+        }
+        document.getElementById('res-feedback').innerText = feedback;
+        document.getElementById('pdf-feedback').innerText = feedback;
+        createAndSavePDF(totalTime);
+      });
+    }
+
+    function getPdfOptions() {
+      return {
+        margin:       [10, 10, 10, 10],
+        filename:     `${userInfo.id}_${userInfo.name}_연산결과.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true }, 
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css'] }
+      };
+    }
+
+    function createAndSavePDF(totalTime) {
+      const wrapper = document.getElementById('pdf-wrapper');
+      const container = document.getElementById('pdf-container');
+      wrapper.style.display = 'block';
+      wrapper.style.position = 'absolute';
+      wrapper.style.top = '0';
+      wrapper.style.left = '50%';
+      wrapper.style.transform = 'translateX(-50%)';
+      wrapper.style.zIndex = '-1000';
+      
+      html2pdf().set(getPdfOptions()).from(container).outputPdf('datauristring').then(function(pdfBase64) {
+        wrapper.style.display = 'none';
+        wrapper.style.position = '';
+        wrapper.style.top = '';
+        wrapper.style.left = '';
+        wrapper.style.transform = '';
+        const base64Data = pdfBase64.split(',')[1];
+        apiCall({
+          action: 'saveRecordAndPdf',
+          id: userInfo.id,
+          name: userInfo.name,
+          loginTime: userInfo.loginTime,
+          score: score,
+          time: totalTime,
+          pdfBase64Data: base64Data
+        }).then((res) => {
+          showScreen('result-screen');
+        });
+      });
+    }
+
+    function downloadPdf() {
+      const wrapper = document.getElementById('pdf-wrapper');
+      const container = document.getElementById('pdf-container');
+      wrapper.style.display = 'block';
+      wrapper.style.position = 'absolute';
+      wrapper.style.top = '0';
+      wrapper.style.left = '50%';
+      wrapper.style.transform = 'translateX(-50%)';
+      wrapper.style.zIndex = '-1000';
+      html2pdf().set(getPdfOptions()).from(container).save().then(() => {
+        wrapper.style.display = 'none';
+        wrapper.style.position = '';
+        wrapper.style.top = '';
+        wrapper.style.left = '';
+        wrapper.style.transform = '';
+      });
+    }
+
+    function showLeaderboard() {
+      showScreen('leaderboard-screen');
+      document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="5" class="py-4">불러오는 중...</td></tr>';
+      apiCall({ action: 'getLeaderboard' }).then((res) => {
+        const records = res.leaderboard || [];
+        let html = '';
+        records.forEach((r, idx) => {
+          let rankClass = idx === 0 ? 'text-yellow-600 font-bold text-lg' : 
+                          idx === 1 ? 'text-gray-500 font-bold text-lg' : 
+                          idx === 2 ? 'text-orange-500 font-bold text-lg' : '';
+          let medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
+          html += `<tr class="hover:bg-gray-50">
+            <td class="py-3 ${rankClass}">${medal}</td>
+            <td class="py-3">${r.id}</td>
+            <td class="py-3">${r.name}</td>
+            <td class="py-3 font-bold text-blue-600">${r.score}</td>
+            <td class="py-3">${r.time}초</td>
+          </tr>`;
+        });
+        document.getElementById('leaderboard-body').innerHTML = html;
+      });
+    }
+  </script>
+</body>
+</html>
