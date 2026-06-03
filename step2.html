@@ -5,10 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>정수 연산 마스터 PRO</title>
   
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
+  <!-- Font setup & custom config -->
   <style>
+    /* Prevent default arrows on number inputs */
     input::-webkit-inner-spin-button,
     input::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -28,42 +33,46 @@
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col items-center p-4">
+<body class="bg-slate-50 min-h-screen text-slate-800 flex items-center justify-center p-4">
 
-<header class="w-full max-w-5xl flex items-center gap-3 py-6 mb-4">
-  <div class="bg-blue-600 p-2 rounded-xl text-white">
-    <i data-lucide="sigma" class="w-6 h-6"></i>
-  </div>
-  <h1 class="text-2xl font-black text-slate-800 tracking-tight">정수 연산 마스터 <span class="text-blue-600">PRO</span></h1>
-</header>
-
+<!-- Main App Container -->
 <div id="app" class="w-full max-w-5xl">
 
+  <!-- ===============================
+       1. Login View
+  ================================ -->
   <div id="view-login" class="flex flex-col items-center w-full max-w-md mx-auto">
     <div class="bg-white w-full rounded-3xl p-8 sm:p-10 shadow-sm border border-slate-200">
       <div class="text-center mb-10">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 mb-4">
           <i data-lucide="sparkles" class="w-8 h-8"></i>
         </div>
-        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">정수 연산 마스터</h2>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">정수 연산 마스터</h1>
         <p class="text-slate-500 mt-2">오늘도 즐겁게 수학을 탐험해봐요!</p>
       </div>
 
       <form id="login-form" class="space-y-4">
+        <label class="sr-only">학번</label>
         <div class="relative">
           <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
-          <input type="text" id="login-id" placeholder="학번 (예: 10101)" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+          <input type="text" id="login-id" placeholder="학번 (예: 10101)" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-medium">
         </div>
+        
+        <label class="sr-only">이름</label>
         <div class="relative">
-          <input type="text" id="login-name" placeholder="이름을 알려주세요" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+          <input type="text" id="login-name" placeholder="이름을 알려주세요" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-medium">
         </div>
+        
+        <label class="sr-only">비밀번호</label>
         <div class="relative">
           <i data-lucide="key-round" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
-          <input type="password" id="login-pw" placeholder="비밀번호" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 font-medium">
+          <input type="password" id="login-pw" placeholder="비밀번호" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-medium">
         </div>
+        
         <p id="login-error" class="text-rose-500 text-sm font-medium pt-1 text-center min-h-[20px]"></p>
+
         <div class="pt-4">
-          <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-4 font-bold text-lg transition-all flex justify-center items-center">
+          <button type="submit" id="login-btn" class="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-xl py-4 font-bold text-lg transition-all flex justify-center items-center">
             <span id="login-btn-text">학습 시작하기</span>
             <i data-lucide="loader-2" id="login-spinner" class="ml-2 w-5 h-5 animate-spin hidden"></i>
           </button>
@@ -72,7 +81,11 @@
     </div>
   </div>
 
+  <!-- ===============================
+       2. Quiz View
+  ================================ -->
   <div id="view-quiz" class="hidden w-full flex-col grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto">
+    <!-- Left Area -->
     <div class="lg:col-span-8 flex flex-col gap-6 w-full">
       <div class="grid grid-cols-3 gap-4">
         <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -97,14 +110,16 @@
           <div id="quiz-level-text" class="inline-block px-4 py-1.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold mb-8 uppercase tracking-widest">
             Level
           </div>
+          
           <div class="transition-all duration-300 transform scale-100 opacity-100" id="quiz-question-container">
             <div id="quiz-question-text" class="text-2xl sm:text-3xl font-black text-slate-800 mb-10 tracking-widest whitespace-nowrap">
               (+5) × (+3) = <span class="text-slate-300">?</span>
             </div>
           </div>
+          
           <form id="quiz-form" class="w-full relative">
             <input type="text" id="quiz-answer-input" placeholder="정답을 입력하세요..." autocomplete="off" class="w-full px-6 py-4 sm:py-5 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-slate-800 transition-all text-center font-black text-lg">
-            <button type="submit" id="quiz-submit-btn" class="w-full mt-4 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50">
+            <button type="submit" id="quiz-submit-btn" class="w-full mt-4 h-16 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50">
               정답 제출하기
             </button>
           </form>
@@ -112,13 +127,18 @@
       </div>
     </div>
 
+    <!-- Right Sidebar (Leaderboard) -->
     <div class="lg:col-span-4 flex flex-col gap-6">
       <div class="flex-1 bg-slate-900 rounded-3xl p-6 sm:p-8 flex flex-col shadow-xl">
         <div class="flex items-center justify-between mb-8">
           <h2 class="text-white font-black text-xl uppercase tracking-tighter">Hall of Fame</h2>
           <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-xs">🏆</div>
         </div>
-        <div class="space-y-4 overflow-hidden flex-1" id="leaderboard-container"></div>
+        
+        <div class="space-y-4 overflow-hidden flex-1" id="leaderboard-container">
+          <!-- Leaderboard entries -->
+        </div>
+
         <div class="mt-6 pt-6 border-t border-white/10">
           <div class="flex items-center gap-4 p-3 bg-blue-600/20 border border-blue-500/50 rounded-xl">
             <span class="text-blue-400 font-black italic w-6 text-center">-</span>
@@ -137,6 +157,9 @@
     </div>
   </div>
 
+  <!-- ===============================
+       3. Loading View
+  ================================ -->
   <div id="view-loading" class="hidden flex-col items-center w-full max-w-md mx-auto">
     <div class="bg-white w-full rounded-3xl p-10 shadow-sm border border-slate-200 text-center flex flex-col items-center">
       <div class="mb-8 animate-spin">
@@ -151,6 +174,9 @@
     </div>
   </div>
 
+  <!-- ===============================
+       4. Result View
+  ================================ -->
   <div id="view-result" class="hidden flex-col w-full max-w-4xl mx-auto space-y-6">
     <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200 text-center">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 mb-6">
@@ -204,15 +230,15 @@
 </div>
 
 <script>
-  // 아이콘이 안 나타나던 문제 해결: 스크립트 실행 위치를 안전하게 조정
-  document.addEventListener("DOMContentLoaded", function() {
-    lucide.createIcons();
-  });
+  // Initialize Lucide Icons
+  lucide.createIcons();
 
-  // 선생님의 웹 앱 주소 장착 완료
+  // ★ Google Apps Script 배포 URL (변경하지 않음)
   const GAS_URL = "https://script.google.com/macros/s/AKfycbw3gYZBJMNv8xnyskxW8f4bU2-pQ1Chc4_y8RM1sbrl3TRJuKc08bPasp0iqbpYmpHlxw/exec";
   
-  const GEMINI_API_KEY = ""; 
+  // ★ 상세한 오답 분석 피드백을 브라우저에서 사용할 때는 아래에 Gemini API 키를 입력하면 됩니다.
+  //   (주의: github 에 모두 공개되는 파일이므로 보안에 주의하세요)
+  const GEMINI_API_KEY = "발급받은_Gemini_API키를_여기에_입력하세요"; 
   
   let user = { id: '', name: '', loginTime: '' };
   let questions = [];
@@ -222,6 +248,7 @@
   let timerInterval = null;
   let pdfUrl = null;
   
+  // Quiz Mock Leaderboard
   const initialLeaderboard = [
     { studentId: "30205", studentName: "김수학", score: 15, time: 24.5 },
     { studentId: "30112", studentName: "이연산", score: 15, time: 28.2 },
@@ -230,10 +257,8 @@
 
   function showView(viewId) {
     document.querySelectorAll('#app > div').forEach(el => {
-      if (el.id.startsWith('view-')) {
-        el.classList.add('hidden');
-        el.classList.remove('flex', 'grid');
-      }
+      el.classList.add('hidden');
+      el.classList.remove('flex', 'grid');
     });
     const target = document.getElementById(viewId);
     if(viewId === 'view-quiz') {
@@ -245,7 +270,7 @@
     }
   }
 
-  // ==== 1. 로그인 (시트 연결) ====
+  // ==== 1. 로그인 ====
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('login-id').value.trim();
@@ -264,29 +289,23 @@
     errEl.textContent = '';
     btn.disabled = true;
     spinner.classList.remove('hidden');
-    btnTxt.textContent = '시트 연결 중...';
+    btnTxt.textContent = '확인 중...';
 
     try {
       const res = await fetch(GAS_URL, {
         method: 'POST',
-        // 서버가 이해할 수 있도록 명확한 요청 방식(content-type) 지정
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
-        },
         body: JSON.stringify({ action: "login", id, name, password: pw })
       });
-      
       const data = await res.json();
       
       if (data.success) {
         user = { id, name, loginTime: new Date().toLocaleString() };
         startQuiz();
       } else {
-        errEl.textContent = data.message || '로그인에 실패했습니다. (비밀번호 확인)';
+        errEl.textContent = data.message || '로그인에 실패했습니다.';
       }
     } catch (err) {
-      errEl.textContent = '구글 시트와 통신 중 오류가 발생했습니다.';
-      console.error(err);
+      errEl.textContent = '서버 통신 중 오류가 발생했습니다.';
     } finally {
       btn.disabled = false;
       btnTxt.textContent = '학습 시작하기';
@@ -394,7 +413,7 @@
     setTimeout(() => input.focus(), 50);
   }
 
-  // 제출 로직
+  // Answer Submission Flow (정답! / 오답!)
   document.getElementById('quiz-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const input = document.getElementById('quiz-answer-input');
@@ -437,16 +456,16 @@
     }, 700);
   });
 
-  // ==== 3. 제미나이 API 문법 오류 완벽 수정 ====
+  // ==== 3. AI 피드백 생성 ====
   async function generateAIFeedback(score, total, history) {
-    if(!GEMINI_API_KEY) {
-      return "퀴즈를 모두 마쳤네요! 앞으로 꾸준히 연습하면 더 큰 성장이 있을 거예요!";
+    if(!GEMINI_API_KEY || GEMINI_API_KEY === "발급받은_Gemini_API키를_여기에_입력하세요") {
+      return "퀴즈를 모두 마쳤네요! 앞으로 꾸준히 연습하면 더 큰 성장이 있을 거예요! (API 키를 연동하면 더 구체적인 AI 피드백을 받을 수 있어요)";
     }
 
     const incorrectAnswers = history.filter(h => !h.isCorrect);
     let analysis = "오답이 없습니다. 완벽합니다!";
     if(incorrectAnswers.length > 0) {
-      analysis = incorrectAnswers.map(h => `- 문제: ${h.question}, 제출한 답: ${h.userAnswer}, 정답: ${h.correctAnswer}`).join('\n');
+      analysis = incorrectAnswers.map(h => `- 문제: ${h.question}, 제출한 답: ${h.userAnswer}, 정답: ${h.correctAnswer}`).join('\\n');
     }
     
     const prompt = `당신은 학생들을 진심으로 아끼고 격려하는 중학교 수학 선생님입니다. 학생이 이해하기 쉽도록 친절하고 다정한 '해요체'를 사용합니다.
@@ -465,7 +484,7 @@ ${analysis}
 3. 길이는 4~6문장 이내로 줄바꿈을 적절히 활용해 작성. 마크다운 기호 사용 금지.`;
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const url = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=\${GEMINI_API_KEY}\`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -480,10 +499,10 @@ ${analysis}
     } catch(e) {
       console.error(e);
     }
-    return "수고하셨습니다!";
+    return "퀴즈를 무사히 마쳤네요! 앞으로 배울 내용들도 지금처럼 화이팅해보아요.";
   }
 
-  // ==== 4. 결과 저장 및 종료 (시트 연동) ====
+  // ==== 4. 결과 저장 및 종료 화면 전환 ====
   async function finishQuiz() {
     showView('view-loading');
     const msgEl = document.getElementById('loading-msg');
@@ -510,34 +529,33 @@ ${analysis}
       
       const res = await fetch(GAS_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
-        },
         body: JSON.stringify(payload)
       });
-      
       const resData = await res.json();
       
       if (resData.success) {
         pdfUrl = resData.pdfUrl;
+        if (resData.leaderboard) {
+          // You could optionally re-render the leaderboard globally here
+        }
       } else {
-        msgEl.textContent = "결과 기록 중 문제가 생겼습니다. (화면만 이동합니다)";
+        msgEl.textContent = "결과 저장 중 문제가 생겼어요. (임시 결과 페이지로 이동합니다)";
       }
     } catch (e) {
       console.error(e);
-      msgEl.textContent = "구글 시트와 통신 오류가 발생했습니다.";
+      msgEl.textContent = "가스(GAS) 서버 통신 오류가 발생했어요.";
     }
 
     renderResultView(score, timeTaken, feedbackText);
     showView('view-result');
   }
 
-  // ==== 5. 결과 화면 (PDF 링크) ====
+  // ==== 5. 결과 화면 ====
   function renderResultView(score, time, feedback) {
     document.getElementById('result-name').textContent = user.name;
     document.getElementById('result-score').textContent = score;
     document.getElementById('result-time').textContent = time;
-    document.getElementById('result-feedback').innerHTML = feedback.replace(/\n/g, '<br>');
+    document.getElementById('result-feedback').innerHTML = feedback.replace(/\\n/g, '<br>');
     
     const btnPdf = document.getElementById('btn-pdf');
     if (pdfUrl && !pdfUrl.includes("실패")) {
@@ -545,7 +563,7 @@ ${analysis}
       btnPdf.onclick = () => window.open(pdfUrl, '_blank', 'noopener,noreferrer');
     } else {
       btnPdf.classList.add('opacity-50', 'cursor-not-allowed');
-      btnPdf.onclick = () => alert('스프레드시트에서 PDF 링크가 생성되지 않았습니다.');
+      btnPdf.onclick = () => alert('PDF 링크가 생성되지 않았습니다.');
     }
   }
 
