@@ -236,10 +236,6 @@
   // ★ Google Apps Script 배포 URL (변경하지 않음)
   const GAS_URL = "https://script.google.com/macros/s/AKfycbw3gYZBJMNv8xnyskxW8f4bU2-pQ1Chc4_y8RM1sbrl3TRJuKc08bPasp0iqbpYmpHlxw/exec";
   
-  // ★ 상세한 오답 분석 피드백을 브라우저에서 사용할 때는 아래에 Gemini API 키를 입력하면 됩니다.
-  //   (주의: github 에 모두 공개되는 파일이므로 보안에 주의하세요)
-  const GEMINI_API_KEY = "발급받은_Gemini_API키를_여기에_입력하세요"; 
-  
   let user = { id: '', name: '', loginTime: '' };
   let questions = [];
   let currentQuestionIndex = 0;
@@ -456,61 +452,13 @@
     }, 700);
   });
 
-  // ==== 3. AI 피드백 생성 ====
-  async function generateAIFeedback(score, total, history) {
-    if(!GEMINI_API_KEY || GEMINI_API_KEY === "발급받은_Gemini_API키를_여기에_입력하세요") {
-      return "퀴즈를 모두 마쳤네요! 앞으로 꾸준히 연습하면 더 큰 성장이 있을 거예요! (API 키를 연동하면 더 구체적인 AI 피드백을 받을 수 있어요)";
-    }
-
-    const incorrectAnswers = history.filter(h => !h.isCorrect);
-    let analysis = "오답이 없습니다. 완벽합니다!";
-    if(incorrectAnswers.length > 0) {
-      analysis = incorrectAnswers.map(h => `- 문제: ${h.question}, 제출한 답: ${h.userAnswer}, 정답: ${h.correctAnswer}`).join('\n');
-    }
-    
-    const prompt = `당신은 학생들을 진심으로 아끼고 격려하는 중학교 수학 선생님입니다. 학생이 이해하기 쉽도록 친절하고 다정한 '해요체'를 사용합니다.
-학생 이름: '${user.name}'
-학습 주제: 정수의 곱셈과 나눗셈
-
-[학습 결과]
-- 맞힌 개수: ${score} / ${total}
-- 오답 기록:
-${analysis}
-
-위 정보를 바탕으로 학생을 위한 맞춤형 학습 피드백을 작성해주세요. 
-규칙:
-1. 오답이 있을 경우, 대표적인 오류 1개를 골라 왜 그렇게 되는지 수학적 원리를 알기 쉽게 설명해주세요.
-2. 오답이 없을 경우, 완벽히 이해한 것을 격려하고 칭찬해주세요.
-3. 길이는 4~6문장 이내로 줄바꿈을 적절히 활용해 작성. 마크다운 기호 사용 금지.`;
-
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
-      const data = await res.json();
-      if(data.candidates && data.candidates[0].content) {
-        return data.candidates[0].content.parts[0].text;
-      }
-    } catch(e) {
-      console.error(e);
-    }
-    return "퀴즈를 무사히 마쳤네요! 앞으로 배울 내용들도 지금처럼 화이팅해보아요.";
-  }
-
-  // ==== 4. 결과 저장 및 종료 화면 전환 ====
+  // ==== 3. 결과 저장 및 종료 화면 전환 ====
   async function finishQuiz() {
     showView('view-loading');
     const msgEl = document.getElementById('loading-msg');
     
     const score = answers.filter(a => a.isCorrect).length;
     const timeTaken = parseFloat(document.getElementById('quiz-timer').textContent);
-    
-    const feedbackText = await generateAIFeedback(score, 15, answers);
 
     try {
       const payload = {
@@ -521,9 +469,7 @@ ${analysis}
           loginTime: user.loginTime,
           score: score,
           time: timeTaken,
-          history: answers,
-          aiFeedback: feedbackText,
-          feedback: feedbackText
+          history: answers
         }
       };
       
@@ -535,18 +481,20 @@ ${analysis}
       
       if (resData.success) {
         pdfUrl = resData.pdfUrl;
-        if (resData.leaderboard) {
-          // You could optionally re-render the leaderboard globally here
-        }
+        
+        // 앱스스크립트 서버에서 생성해준 피드백 받아오기
+        const feedbackText = resData.aiFeedback || "수고하셨습니다! 결과를 성공적으로 저장했습니다.";
+        renderResultView(score, timeTaken, feedbackText);
       } else {
         msgEl.textContent = "결과 저장 중 문제가 생겼어요. (임시 결과 페이지로 이동합니다)";
+        renderResultView(score, timeTaken, "결과를 저장하지 못했습니다.");
       }
     } catch (e) {
       console.error(e);
       msgEl.textContent = "가스(GAS) 서버 통신 오류가 발생했어요.";
+      renderResultView(score, timeTaken, "서버 통신 중 오류가 발생했습니다.");
     }
 
-    renderResultView(score, timeTaken, feedbackText);
     showView('view-result');
   }
 
