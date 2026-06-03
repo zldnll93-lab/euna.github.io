@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>정수 연산 마스터 PRO</title>
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Custom Font & Number Input style reset -->
   <style>
+    /* Prevent default arrows on number inputs */
     input::-webkit-inner-spin-button,
     input::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -32,32 +30,40 @@
   </script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col items-center p-4">
 
-<!-- Main App Container -->
+<header class="w-full max-w-5xl flex items-center gap-3 py-6 mb-4">
+  <div class="bg-blue-600 p-2 rounded-xl text-white">
+    <i data-lucide="sigma" class="w-6 h-6"></i>
+  </div>
+  <h1 class="text-2xl font-black text-slate-800 tracking-tight">정수 연산 마스터 <span class="text-blue-600">PRO</span></h1>
+</header>
+
 <div id="app" class="w-full max-w-5xl">
 
-  <!-- ===============================
-       1. Login 화면
-  ================================ -->
   <div id="view-login" class="flex flex-col items-center w-full max-w-md mx-auto">
     <div class="bg-white w-full rounded-3xl p-8 sm:p-10 shadow-sm border border-slate-200">
       <div class="text-center mb-10">
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 mb-4">
           <i data-lucide="sparkles" class="w-8 h-8"></i>
         </div>
-        <h1 class="text-2xl font-bold text-slate-800 tracking-tight">정수 연산 마스터</h1>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">정수 연산 마스터</h2>
         <p class="text-slate-500 mt-2">오늘도 즐겁게 수학을 탐험해봐요!</p>
       </div>
 
       <form id="login-form" class="space-y-4">
+        <label class="sr-only">학번</label>
         <div class="relative">
           <i data-lucide="user" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
           <input type="text" id="login-id" placeholder="학번 (예: 10101)" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-medium">
         </div>
+        
+        <label class="sr-only">이름</label>
         <div class="relative">
           <input type="text" id="login-name" placeholder="이름을 알려주세요" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-medium">
         </div>
+        
+        <label class="sr-only">비밀번호</label>
         <div class="relative">
           <i data-lucide="key-round" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
           <input type="password" id="login-pw" placeholder="비밀번호" class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all font-medium">
@@ -66,7 +72,7 @@
         <p id="login-error" class="text-rose-500 text-sm font-medium pt-1 text-center min-h-[20px]"></p>
 
         <div class="pt-4">
-          <button type="submit" id="login-btn" class="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-xl py-4 font-bold text-lg transition-all flex justify-center items-center">
+          <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-4 font-bold text-lg transition-all flex justify-center items-center">
             <span id="login-btn-text">학습 시작하기</span>
             <i data-lucide="loader-2" id="login-spinner" class="ml-2 w-5 h-5 animate-spin hidden"></i>
           </button>
@@ -75,11 +81,7 @@
     </div>
   </div>
 
-  <!-- ===============================
-       2. Quiz 화면
-  ================================ -->
   <div id="view-quiz" class="hidden w-full flex-col grid-cols-1 lg:grid-cols-12 gap-8 max-w-5xl mx-auto">
-    <!-- 왼쪽 메인 영역 -->
     <div class="lg:col-span-8 flex flex-col gap-6 w-full">
       <div class="grid grid-cols-3 gap-4">
         <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
@@ -107,13 +109,13 @@
           
           <div class="transition-all duration-300 transform scale-100 opacity-100" id="quiz-question-container">
             <div id="quiz-question-text" class="text-2xl sm:text-3xl font-black text-slate-800 mb-10 tracking-widest whitespace-nowrap">
-              <!-- Question displays here -->
+              (+5) × (+3) = <span class="text-slate-300">?</span>
             </div>
           </div>
           
           <form id="quiz-form" class="w-full relative">
-            <input type="text" id="quiz-answer-input" placeholder="정답을 입력하세요" autocomplete="off" class="w-full px-6 py-4 sm:py-5 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-slate-800 transition-all text-center font-black text-lg">
-            <button type="submit" id="quiz-submit-btn" class="w-full mt-4 h-16 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50">
+            <input type="text" id="quiz-answer-input" placeholder="정답을 입력하세요..." autocomplete="off" class="w-full px-6 py-4 sm:py-5 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-slate-800 transition-all text-center font-black text-lg">
+            <button type="submit" id="quiz-submit-btn" class="w-full mt-4 h-16 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all disabled:opacity-50">
               정답 제출하기
             </button>
           </form>
@@ -121,17 +123,15 @@
       </div>
     </div>
 
-    <!-- 오른쪽 사이드바 영역 -->
     <div class="lg:col-span-4 flex flex-col gap-6">
       <div class="flex-1 bg-slate-900 rounded-3xl p-6 sm:p-8 flex flex-col shadow-xl">
         <div class="flex items-center justify-between mb-8">
-          <h2 class="text-white font-black text-xl uppercase tracking-tighter">명예의 전당</h2>
+          <h2 class="text-white font-black text-xl uppercase tracking-tighter">Hall of Fame</h2>
           <div class="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center text-xs">🏆</div>
         </div>
         
         <div class="space-y-4 overflow-hidden flex-1" id="leaderboard-container">
-          <!-- 랭킹 화면 표시 -->
-        </div>
+          </div>
 
         <div class="mt-6 pt-6 border-t border-white/10">
           <div class="flex items-center gap-4 p-3 bg-blue-600/20 border border-blue-500/50 rounded-xl">
@@ -139,7 +139,7 @@
             <div class="flex-1">
               <p class="text-white font-bold text-sm tracking-wide">
                 <span class="text-slate-400 font-normal mr-1 text-[10px]">학번</span><span id="lb-my-id"></span>
-                <span class="text-slate-400 font-normal ml-3 mr-1 text-[10px]">이름</span><span id="lb-my-name"></span>
+                <span class="text-slate-400 font-normal ml-3 mr-1 text-[10px]">이름</span><span id="lb-my-name"></span> (나)
               </p>
               <p class="text-xs text-blue-400 font-medium mt-0.5">
                 <span class="text-blue-200 font-normal text-[10px]">현재 도전 중...</span>
@@ -151,9 +151,6 @@
     </div>
   </div>
 
-  <!-- ===============================
-       3. Loading 화면
-  ================================ -->
   <div id="view-loading" class="hidden flex-col items-center w-full max-w-md mx-auto">
     <div class="bg-white w-full rounded-3xl p-10 shadow-sm border border-slate-200 text-center flex flex-col items-center">
       <div class="mb-8 animate-spin">
@@ -163,14 +160,11 @@
       </div>
       <h2 class="text-2xl font-bold text-slate-800 mb-3">결과를 정리하고 있어요</h2>
       <p id="loading-msg" class="text-slate-500 leading-relaxed max-w-xs mx-auto">
-        선생님의 따뜻한 맞춤 피드백을 준비하고 있습니다. 조금만 기다려주세요!
+        선생님의 따뜻한 피드백을 준비하고 있습니다. 조금만 기다려주세요!
       </p>
     </div>
   </div>
 
-  <!-- ===============================
-       4. Result 화면
-  ================================ -->
   <div id="view-result" class="hidden flex-col w-full max-w-4xl mx-auto space-y-6">
     <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200 text-center">
       <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 mb-6">
@@ -208,7 +202,7 @@
           <i data-lucide="message-circle" class="w-6 h-6"></i>
         </div>
         <div>
-          <h3 class="text-lg font-bold text-slate-800 mb-2">선생님의 한마디 (AI 피드백)</h3>
+          <h3 class="text-lg font-bold text-slate-800 mb-2">선생님의 한마디</h3>
           <p id="result-feedback" class="text-slate-600 leading-relaxed font-medium"></p>
         </div>
       </div>
@@ -223,13 +217,16 @@
 
 </div>
 
-<!-- Vanilla JS 로직 -->
 <script>
-  // 0. 아이콘 렌더링
-  lucide.createIcons();
+  // 페이지가 로드되면 아이콘을 그립니다.
+  document.addEventListener("DOMContentLoaded", function() {
+    lucide.createIcons();
+  });
 
-  // 1. 설정 변수
+  // ★ Google Apps Script 배포 URL
   const GAS_URL = "https://script.google.com/macros/s/AKfycbw3gYZBJMNv8xnyskxW8f4bU2-pQ1Chc4_y8RM1sbrl3TRJuKc08bPasp0iqbpYmpHlxw/exec";
+  
+  // ★ AI 피드백을 위한 API 키
   const GEMINI_API_KEY = "발급받은_Gemini_API키를_여기에_입력하세요"; 
   
   let user = { id: '', name: '', loginTime: '' };
@@ -240,17 +237,17 @@
   let timerInterval = null;
   let pdfUrl = null;
   
+  // Quiz Mock Leaderboard
   const initialLeaderboard = [
     { studentId: "30205", studentName: "김수학", score: 15, time: 24.5 },
     { studentId: "30112", studentName: "이연산", score: 15, time: 28.2 },
     { studentId: "30301", studentName: "박정수", score: 14, time: 31.0 }
   ];
 
-  /* 화면 전환 함수 */
   function showView(viewId) {
-    ['view-login', 'view-quiz', 'view-loading', 'view-result'].forEach(id => {
-      document.getElementById(id).classList.add('hidden');
-      document.getElementById(id).classList.remove('flex', 'grid');
+    document.querySelectorAll('#app > div').forEach(el => {
+      el.classList.add('hidden');
+      el.classList.remove('flex', 'grid');
     });
     const target = document.getElementById(viewId);
     if(viewId === 'view-quiz') {
@@ -262,7 +259,7 @@
     }
   }
 
-  /* ==== 로그인 ==== */
+  // ==== 1. 로그인 ====
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const id = document.getElementById('login-id').value.trim();
@@ -305,256 +302,6 @@
     }
   });
 
-  /* ==== 퀴즈 로직 생성 ==== */
+  // ==== 2. 퀴즈 생성 및 진행 ====
   function getRandomInt() {
-    const nums = [-15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    return nums[Math.floor(Math.random() * nums.length)];
-  }
-
-  function generateQuizData() {
-    const qArr = [];
-    let posPosCount = 0;
-    for (let i = 0; i < 15; i++) {
-        let num1, num2, isMulti, isPosPos;
-        do {
-            num1 = getRandomInt();
-            num2 = getRandomInt();
-            isMulti = Math.random() > 0.5;
-            isPosPos = num1 > 0 && num2 > 0;
-        } while (isPosPos && posPosCount >= 2);
-        if (isPosPos) posPosCount++;
-        
-        const n1Str = num1 > 0 ? `(+${num1})` : `(${num1})`;
-        const n2Str = num2 > 0 ? `(+${num2})` : `(${num2})`;
-        let text = "", correct = 0;
-        
-        if (isMulti) { text = `${n1Str} × ${n2Str}`; correct = num1 * num2; }
-        else { text = `${(num1 * num2) > 0 ? '(+'+(num1*num2)+')' : '('+(num1*num2)+')'} ÷ ${n1Str}`; correct = num2; }
-        
-        qArr.push({ text, correctAnswer: correct, type: isMulti ? 'multiplication' : 'division' });
-    }
-    return qArr;
-  }
-
-  function startQuiz() {
-    questions = generateQuizData();
-    currentQuestionIndex = 0;
-    answers = [];
-    quizStartTime = Date.now();
-    
-    document.getElementById('lb-my-id').textContent = user.id;
-    document.getElementById('lb-my-name').textContent = user.name;
-    
-    renderLeaderboard(initialLeaderboard);
-    showView('view-quiz');
-    renderQuestion();
-
-    if(timerInterval) clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      const diff = (Date.now() - quizStartTime) / 1000;
-      document.getElementById('quiz-timer').textContent = diff.toFixed(1);
-    }, 100);
-  }
-
-  function renderLeaderboard(board) {
-    const container = document.getElementById('leaderboard-container');
-    container.innerHTML = '';
-    board.slice(0, 5).forEach((entry, idx) => {
-      const isFirst = idx === 0, isSecond = idx === 1, isThird = idx === 2;
-      let numColor = 'text-slate-600', bgColor = 'bg-transparent border-white/5';
-      if(isFirst) { numColor = 'text-amber-500'; bgColor = 'bg-white/5 border-white/10'; }
-      else if(isSecond) { numColor = 'text-slate-300'; bgColor = 'bg-white/5 border-white/10'; }
-      else if(isThird) { numColor = 'text-orange-600'; bgColor = 'bg-white/5 border-white/10'; }
-      
-      container.innerHTML += `
-        <div class="flex items-center gap-4 p-3 border rounded-xl ${bgColor}">
-          <span class="${numColor} font-black italic w-6 text-center">${String(idx + 1).padStart(2, '0')}</span>
-          <div class="flex-1">
-            <p class="text-white font-bold text-sm tracking-wide">
-              <span class="text-slate-400 font-normal mr-1 text-[10px]">학번</span>${entry.studentId}
-              <span class="text-slate-400 font-normal ml-3 mr-1 text-[10px]">이름</span>${entry.studentName}
-            </p>
-            <p class="text-xs text-emerald-400 font-medium mt-0.5">
-              <span class="text-slate-500 font-normal mr-1 text-[10px]">맞힌 개수</span>${entry.score}개
-              <span class="text-slate-500 font-normal ml-3 mr-1 text-[10px]">걸린 시간</span>${entry.time}초
-            </p>
-          </div>
-        </div>`;
-    });
-  }
-
-  function renderQuestion() {
-    const q = questions[currentQuestionIndex];
-    document.getElementById('quiz-progress-text').textContent = String(currentQuestionIndex + 1).padStart(2, '0');
-    document.getElementById('quiz-correct-count').textContent = answers.filter(a => a.isCorrect).length;
-    document.getElementById('quiz-level-text').textContent = q.type === 'multiplication' ? "Multiplication" : "Division";
-    document.getElementById('quiz-question-text').innerHTML = `${q.text} = <span class="text-slate-300">?</span>`;
-    
-    const input = document.getElementById('quiz-answer-input');
-    const submitBtn = document.getElementById('quiz-submit-btn');
-    input.value = '';
-    input.disabled = false;
-    submitBtn.disabled = false;
-    
-    input.className = "w-full px-6 py-4 sm:py-5 bg-slate-50 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-slate-800 transition-all text-center font-black text-lg";
-    setTimeout(() => input.focus(), 50);
-  }
-
-  /* ==== 정답 판별 ==== */
-  document.getElementById('quiz-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const input = document.getElementById('quiz-answer-input');
-    const submitBtn = document.getElementById('quiz-submit-btn');
-    
-    if (input.disabled || input.value.trim() === '') return;
-    
-    const val = parseInt(input.value, 10);
-    if (isNaN(val)) return;
-
-    const q = questions[currentQuestionIndex];
-    const isCorrect = (val === q.correctAnswer);
-    
-    input.disabled = true;
-    submitBtn.disabled = true;
-    
-    if (isCorrect) {
-      input.classList.add('!bg-emerald-100', '!text-emerald-700', 'text-xl');
-      input.value = '정답!';
-    } else {
-      input.classList.add('!bg-rose-100', '!text-rose-700', 'text-xl');
-      input.value = '오답!';
-    }
-    
-    answers.push({
-      question: q.text,
-      correctAnswer: q.correctAnswer,
-      userAnswer: val,
-      isCorrect: isCorrect
-    });
-    
-    setTimeout(() => {
-      if (currentQuestionIndex >= 14) {
-        clearInterval(timerInterval);
-        finishQuiz();
-      } else {
-        currentQuestionIndex++;
-        renderQuestion();
-      }
-    }, 700);
-  });
-
-  /* ==== AI 피드백 텍스트 생성 ==== */
-  async function generateAIFeedback(score, total, history) {
-    if(!GEMINI_API_KEY || GEMINI_API_KEY.includes("발급받은")) {
-      return "퀴즈를 모두 마쳤네요! 앞으로 꾸준히 연습하면 더 큰 성장이 있을 거예요! (HTML 코드 상단에 API 키를 입력하면 AI 피드백이 생성됩니다.)";
-    }
-
-    const incorrectAnswers = history.filter(h => !h.isCorrect);
-    let analysis = "오답이 없습니다. 완벽합니다!";
-    if(incorrectAnswers.length > 0) {
-      analysis = incorrectAnswers.map(h => `- 문제: ${h.question}, 제출한 답: ${h.userAnswer}, 정답: ${h.correctAnswer}`).join('\n');
-    }
-    
-    const prompt = `당신은 학생들을 진심으로 아끼고 격려하는 중학교 수학 선생님입니다. 친절하고 다정하게 존댓말('해요체')로 작성합니다.
-학생 이름: '${user.name}'
-
-[학습 결과]
-- 맞힌 문제: ${score} / ${total}
-- 오답 기록:
-${analysis}
-
-위 정보를 바탕으로 학생에게 남기는 따뜻하고 구체적인 피드백을 작성해주세요. 
-오답이 있을 경우, 대표적인 오류 상황 1가지를 골라 '수학적 원리(예: 음수끼리의 곱은 양수가 됨)'를 알기 쉽게 설명해주세요.
-오답이 없을 경우, 완벽한 이해를 바탕으로 크게 칭찬해주세요.
-전체 분량은 4~5문장으로 줄바꿈을 적절히 활용해 작성하고 마크다운 문법 기호(* 등)는 제외해주세요.`;
-
-    try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-      });
-      const data = await res.json();
-      if(data.candidates && data.candidates[0].content) {
-        return data.candidates[0].content.parts[0].text;
-      }
-    } catch(e) { }
-    return "퀴즈를 무사히 마쳤네요! 앞으로 배울 내용들도 지금처럼 화이팅해보아요.";
-  }
-
-  /* ==== 결과 저장 프로세스 ==== */
-  async function finishQuiz() {
-    showView('view-loading');
-    const msgEl = document.getElementById('loading-msg');
-    
-    const score = answers.filter(a => a.isCorrect).length;
-    const timeTaken = parseFloat(document.getElementById('quiz-timer').textContent);
-    
-    const feedbackText = await generateAIFeedback(score, 15, answers);
-
-    try {
-      // GAS 서버에 전달하는 데이터
-      const payload = {
-        action: "saveResult",
-        data: {
-          id: user.id,
-          name: user.name,
-          loginTime: user.loginTime,
-          score: score,
-          time: timeTaken,
-          history: answers,
-          aiFeedback: feedbackText, // 수정한 GAS 스크립트 대응용 필드
-          feedback: feedbackText    // 기존 GAS 스크립트 대응용 필드
-        }
-      };
-      
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      const resData = await res.json();
-      
-      if (resData.success) {
-        pdfUrl = resData.pdfUrl;
-      } else {
-        msgEl.textContent = "결과 기록 중 오류가 났어요. (임시 결과 페이지로 넘깁니다)";
-      }
-    } catch (e) {
-      msgEl.textContent = "가스(GAS) 서버 통신 오류가 발생했어요.";
-    }
-
-    renderResultView(score, timeTaken, feedbackText);
-    showView('view-result');
-  }
-
-  /* ==== 결과 화면 렌더링 ==== */
-  function renderResultView(score, time, feedback) {
-    document.getElementById('result-name').textContent = user.name;
-    document.getElementById('result-score').textContent = score;
-    document.getElementById('result-time').textContent = time;
-    document.getElementById('result-feedback').innerHTML = feedback.replace(/\n/g, '<br/>');
-    
-    const btnPdf = document.getElementById('btn-pdf');
-    if (pdfUrl && !pdfUrl.includes("실패")) {
-      btnPdf.classList.remove('opacity-50', 'cursor-not-allowed');
-      btnPdf.onclick = () => window.open(pdfUrl, '_blank', 'noopener,noreferrer');
-    } else {
-      btnPdf.classList.add('opacity-50', 'cursor-not-allowed');
-      btnPdf.onclick = () => alert('PDF 링크가 아직 생성되지 않았습니다.');
-    }
-  }
-
-  /* ==== 처음부터 다시 ==== */
-  document.getElementById('btn-restart').addEventListener('click', () => {
-    user = { id: '', name: '', loginTime: '' };
-    document.getElementById('login-id').value = '';
-    document.getElementById('login-name').value = '';
-    document.getElementById('login-pw').value = '';
-    document.getElementById('login-error').textContent = '';
-    showView('view-login');
-  });
-
-</script>
-</body>
-</html>
+    const nums = [-15, -14, -13, -12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, 2, 3, 4,
