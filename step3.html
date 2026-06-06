@@ -486,7 +486,7 @@
                 feedbackText = "⚠️ AI 피드백을 생성하지 못했습니다.";
             }
 
-            // --- [특수 처리] 학생 이름 다정하게 부르기 및 호칭(학생) 완벽 교정 ---
+            // --- [특수 처리] 학생 이름 다정하게 부르기 및 맞춤법(아/야) 완벽 교정 ---
             const studentFullName = state.student.studentName || "";
             let firstName = "";
             let searchNames = [];
@@ -503,15 +503,19 @@
             }
 
             if (firstName) {
-                searchNames.push(firstName);
+                const lastCharCode = firstName.charCodeAt(firstName.length - 1);
+                let hasJongseong = true;
+                if (lastCharCode >= 0xAC00 && lastCharCode <= 0xD7A3) {
+                    hasJongseong = (lastCharCode - 0xAC00) % 28 > 0;
+                }
+                const correctParticle = hasJongseong ? '아' : '야';
 
-                // 1. AI가 (전체이름+아/야) 또는 (이름+아/야) 라고 부른 경우 -> "OO 학생"으로 교정
+                searchNames.push(firstName);
                 searchNames.forEach(name => {
                     const wrongCallRegex = new RegExp(name + '[아야]', 'g');
-                    feedbackText = feedbackText.replace(wrongCallRegex, firstName + ' 학생');
+                    feedbackText = feedbackText.replace(wrongCallRegex, firstName + correctParticle);
                 });
 
-                // 2. 조사가 붙지 않은 나머지 풀네임 치환 (예: "김지수 학생은" -> "지수 학생은")
                 searchNames.forEach(name => {
                     if(name !== firstName) {
                         const nameRegex = new RegExp(name, 'g');
@@ -519,6 +523,14 @@
                     }
                 });
             }
+            // ------------------------------------------
+
+            // --- [핵심 추가] AI의 불필요한 LaTeX(라텍) 수식 문법 제거 및 치환 ---
+            // 1. \times 를 실제 곱하기 기호(×)로 변경
+            feedbackText = feedbackText.replace(/\\times/g, '×');
+            
+            // 2. 수식을 감싸는 $ 달러 기호 제거 (예: $2^3$ -> 2^3)
+            feedbackText = feedbackText.replace(/\$/g, '');
             // ------------------------------------------
 
             // 마크다운 문법을 HTML로 먼저 변환
