@@ -306,6 +306,7 @@
 
                 let posPosAddCount = 0;
                 let negativeAnswerCount = 0;
+                let diffSignCount = 0;
 
                 for (let i = 0; i < 15; i++) {
                     let a, b, answer, isPosPosAdd;
@@ -314,7 +315,7 @@
                     while (!validQuestion) {
                         // 0 제외: 부호 표기를 명확하게 하기 위해 1~20 사이의 양수/음수만 생성
                         let getNum = () => {
-                            let n = Math.floor(Math.random() * 20) + 1; // 1~20 사이의 숫자
+                            let n = Math.floor(Math.random() * 20) + 1;
                             return Math.random() < 0.5 ? n : -n;
                         };
 
@@ -334,6 +335,11 @@
                         if (isPosPosAdd) posPosAddCount++;
                     }
 
+                    // 서로 다른 부호의 연산인지 확인하여 카운트
+                    if ((a > 0 && b < 0) || (a < 0 && b > 0)) {
+                        diffSignCount++;
+                    }
+
                     // 3. 양수는 무조건 (+), 음수는 (-) 괄호 포맷팅
                     let strA = a > 0 ? `(+${a})` : `(${a})`;
                     let strB = b > 0 ? `(+${b})` : `(${b})`;
@@ -350,8 +356,8 @@
                     });
                 }
 
-                // 5. 전체 15문제의 세트 조건 완벽 검증 (음수정답 8개 이상 & 양수+양수 정확히 1개)
-                if (posPosAddCount === 1 && negativeAnswerCount >= 8) {
+                // 5. 전체 15문제의 세트 조건 완벽 검증 (음수정답 8개 이상, 양수+양수 정확히 1개, 서로 다른 부호 연산 8개 이상)
+                if (posPosAddCount === 1 && negativeAnswerCount >= 8 && diffSignCount >= 8) {
                     finalQuestions = questions;
                     validSet = true;
                 }
@@ -521,6 +527,14 @@
                 searchNames.forEach(n => {
                     const wrongCallRegex = new RegExp(n + '[아야]', 'g');
                     feedbackText = feedbackText.replace(wrongCallRegex, firstName + ' 학생');
+                    
+                    // '향산이가', '향산이는', '향산이' 등 잘못된 호칭을 자연스러운 존댓말 호칭으로 변환
+                    feedbackText = feedbackText.replace(new RegExp(n + '이가', 'g'), firstName + ' 학생이');
+                    feedbackText = feedbackText.replace(new RegExp(n + '이는', 'g'), firstName + ' 학생은');
+                    feedbackText = feedbackText.replace(new RegExp(n + '이를', 'g'), firstName + ' 학생을');
+                    feedbackText = feedbackText.replace(new RegExp(n + '이에게', 'g'), firstName + ' 학생에게');
+                    feedbackText = feedbackText.replace(new RegExp(n + '이의', 'g'), firstName + ' 학생의');
+                    feedbackText = feedbackText.replace(new RegExp(n + '이(?=[^가-힣]|$)', 'g'), firstName + ' 학생');
                 });
                 
                 feedbackText = feedbackText.replace(/oo야/g, name + ' 학생');
