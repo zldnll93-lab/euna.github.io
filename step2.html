@@ -270,8 +270,9 @@
             }
         }
 
-        // --- [핵심 수정] 정수와 유리수의 곱셈 나눗셈 문제 생성 로직 ---
-        function generateProblem(isBothPositive) {
+        // --- [핵심 수정] 정수와 유리수의 곱셈 나눗셈 문제 생성 로직 (제한 로직 추가) ---
+        function generateProblem(isBothPositive, counts) {
+            counts = counts || { leftPlus1: 0, leftMinus1: 0, rightPlus1: 0 };
             const isMultiplication = Math.random() < 0.5; // 50% 확률로 곱셈/나눗셈
             
             // 기약분수 생성 함수
@@ -285,19 +286,42 @@
                 return { n: n / g, d: d / g };
             };
 
-            let frac1 = getIrreducibleFraction();
-            let frac2 = getIrreducibleFraction();
-            
-            // 부호 결정 (isBothPositive에 따라)
-            let sign1, sign2;
-            if (isBothPositive) {
-                sign1 = 1;
-                sign2 = 1;
-            } else {
-                const signs = [ [1, -1], [-1, 1], [-1, -1] ];
-                const selectedSigns = signs[Math.floor(Math.random() * signs.length)];
-                sign1 = selectedSigns[0];
-                sign2 = selectedSigns[1];
+            let frac1, frac2, sign1, sign2;
+            let isValid = false;
+
+            // +1, -1 중복 출제를 막기 위해 조건을 만족할 때까지 문제를 다시 생성합니다.
+            while (!isValid) {
+                frac1 = getIrreducibleFraction();
+                frac2 = getIrreducibleFraction();
+                
+                // 부호 결정 (isBothPositive에 따라)
+                if (isBothPositive) {
+                    sign1 = 1;
+                    sign2 = 1;
+                } else {
+                    const signs = [ [1, -1], [-1, 1], [-1, -1] ];
+                    const selectedSigns = signs[Math.floor(Math.random() * signs.length)];
+                    sign1 = selectedSigns[0];
+                    sign2 = selectedSigns[1];
+                }
+
+                // 현재 생성된 수식 판별
+                let isLeftPlus1 = (frac1.n === 1 && frac1.d === 1 && sign1 === 1);
+                let isLeftMinus1 = (frac1.n === 1 && frac1.d === 1 && sign1 === -1);
+                let isRightPlus1 = (frac2.n === 1 && frac2.d === 1 && sign2 === 1);
+
+                // 연산 기호 앞에 나오는 +1과 -1은 전체 문제 중 최대 1번까지만 허용 (2번 이상 불가)
+                if (isLeftPlus1 && counts.leftPlus1 >= 1) continue;
+                if (isLeftMinus1 && counts.leftMinus1 >= 1) continue;
+                
+                // 연산 기호 뒤(위)에 나오는 +1은 전체 문제 중 최대 1번까지만 허용 (2번 이상 불가)
+                if (isRightPlus1 && counts.rightPlus1 >= 1) continue;
+
+                // 모든 조건을 만족하면 루프 탈출 및 카운트 증가
+                isValid = true;
+                if (isLeftPlus1) counts.leftPlus1++;
+                if (isLeftMinus1) counts.leftMinus1++;
+                if (isRightPlus1) counts.rightPlus1++;
             }
             
             // 문제 화면 표시용 (가로선 분수)
@@ -408,7 +432,10 @@
                 [types[i], types[j]] = [types[j], types[i]];
             }
 
-            state.questions = types.map(isBothPositive => generateProblem(isBothPositive));
+            // [+1, -1] 제한을 위해 카운트 객체를 생성하여 넘겨줍니다.
+            let issueCounts = { leftPlus1: 0, leftMinus1: 0, rightPlus1: 0 };
+            state.questions = types.map(isBothPositive => generateProblem(isBothPositive, issueCounts));
+            
             state.currentIndex = 0;
             state.results = [];
             state.startTime = Date.now();
