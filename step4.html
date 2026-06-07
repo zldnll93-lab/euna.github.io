@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>정수와 유리수 연산 마스터</title>
-  
+  <title>정수와 유리수 연산 마스터</title>  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- PDF 저장을 위한 html2pdf 라이브러리 -->
@@ -12,67 +11,132 @@
 
   <style>
     :root {
-      --mint-main: #2dd4bf;
-      --mint-light: #ccfbf1;
+      /* 🎨 이곳에 이미지에서 추출한 색상 코드를 넣어주세요! */
+      --theme-main: #6366f1;   /* 메인 색상 (버튼 배경, 테두리 등) - 현재 인디고 */
+      --theme-hover: #4f46e5;  /* 마우스 올렸을 때 색상 - 현재 진한 인디고 */
+      --theme-light: #e0e7ff;  /* 연한 배경이나 입력창 테두리 색상 */
+      --theme-text: #4338ca;   /* 진한 글자 색상 (제목 등) */
       --pastel-warm: #fef3c7;
+    }    
+    
+    body { 
+      background-color: #f8fafc; 
+      font-family: 'Pretendard', sans-serif; 
+    }    
+    
+    /* 새롭게 추가된 테마 전용 클래스 */
+    .text-theme { color: var(--theme-text); }
+    .bg-theme { background-color: var(--theme-main); color: white; }
+    .bg-theme:hover { background-color: var(--theme-hover); }
+    .border-theme-light { border-color: var(--theme-light); }
+    .outline-theme:focus { 
+      outline: 2px solid var(--theme-main); 
+      outline-offset: -1px; 
+      border-color: transparent; 
     }
-    body { background-color: #f8fafc; font-family: 'Pretendard', sans-serif; }
-    .btn-mint { background-color: var(--mint-main); color: white; transition: 0.2s; }
-    .btn-mint:hover { background-color: #14b8a6; }
-    .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 6px solid var(--mint-main); }
+
+    .btn-theme { 
+      background-color: var(--theme-main); 
+      color: white; 
+      transition: 0.2s; 
+    }
+    .btn-theme:hover { 
+      background-color: var(--theme-hover); 
+    }    
+    
+    .card { 
+      background: white; 
+      border-radius: 1rem; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+      border-top: 6px solid var(--theme-main); 
+    }    
+    
     /* AI 피드백 텍스트(문장 덩어리) 중간이 잘리는 것 방지 */
-    .ai-feedback p, .ai-feedback h3, .ai-feedback li { page-break-inside: avoid; break-inside: avoid; }
-    .ai-feedback h3 { color: #0f766e; font-weight: bold; margin-top: 10px; margin-bottom: 8px; }
-    .ai-feedback p { margin-bottom: 8px; line-height: 1.6; }
-    .ai-feedback ul, .ai-feedback ol { margin-left: 20px; margin-bottom: 8px; }
+    .ai-feedback p, .ai-feedback h3, .ai-feedback li { 
+      page-break-inside: avoid; 
+      break-inside: avoid; 
+    }
+    .ai-feedback h3 { 
+      color: var(--theme-text); 
+      font-weight: bold; 
+      margin-top: 10px; 
+      margin-bottom: 8px; 
+    }
+    .ai-feedback p { 
+      margin-bottom: 8px; 
+      line-height: 1.6; 
+    }
+    .ai-feedback ul, .ai-feedback ol { 
+      margin-left: 20px; 
+      margin-bottom: 8px; 
+    }    
+    
     /* PDF 페이지 넘김 강제 적용 클래스 */
-    .html2pdf__page-break { page-break-before: always; }
+    .html2pdf__page-break { 
+      page-break-before: always; 
+    }
   </style>
 </head>
+
 <!-- PDF 레이아웃 꼬임 방지를 위해 body에서 flex 속성을 제거하고 block 형태로 전환했습니다 -->
 <body class="text-slate-700 p-4">
 
 <!-- 중앙 정렬을 위해 mx-auto 적용 (flex 제거에 따른 조치) -->
-<div id="app-container" class="w-full max-w-4xl mx-auto mt-4">
-  
+<div id="app-container" class="w-full max-w-4xl mx-auto mt-4">  
+
   <!-- 로그인 화면 -->
-  <div id="login-screen" class="card p-8 max-w-md mx-auto mt-8">
-    <h1 class="text-2xl font-bold text-center mb-6 text-teal-600">🧮 혼합계산 챌린지</h1>
-    <input type="text" id="student-id" placeholder="학번 (예: 10801)" class="w-full p-3 mb-4 border rounded bg-slate-50 focus:outline-teal-400">
-    <input type="text" id="student-name" placeholder="이름" class="w-full p-3 mb-4 border rounded bg-slate-50 focus:outline-teal-400">
-    <input type="password" id="student-pw" placeholder="비밀번호" class="w-full p-3 mb-6 border rounded bg-slate-50 focus:outline-teal-400">
-    <button onclick="login()" class="w-full btn-mint py-3 rounded font-bold text-lg">로그인 시작</button>
-    <p id="login-msg" class="text-red-500 text-sm mt-3 text-center"></p>
+  <div id="login-screen" class="max-w-md mx-auto mt-8 mb-12">
+    <!-- 타이틀 영역 -->
+    <div class="text-center mt-6 mb-8">
+      <h1 class="text-3xl font-extrabold text-theme mb-2 tracking-tight">🧮 덧셈·뺄셈 혼합 계산 챌린지</h1>
+      <p class="text-indigo-600/80 text-sm font-medium">수학 실력을 뽐내보세요!</p>
+    </div>
+    
+    <!-- 로그인 폼 영역 (투명한 유리 느낌) -->
+    <div class="bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-[0_8px_30px_rgba(99,102,241,0.12)] border border-indigo-50 flex flex-col space-y-5">
+      <h2 class="text-xl font-bold text-indigo-800 text-center mb-2">시작하기 전에</h2>
+      
+      <input type="text" id="student-id" autofocus placeholder="학번 (예: 10801)" class="w-full p-4 bg-white/80 border border-indigo-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
+      
+      <input type="text" id="student-name" placeholder="이름" class="w-full p-4 bg-white/80 border border-indigo-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
+      
+      <input type="password" id="student-pw" placeholder="비밀번호" class="w-full p-4 bg-white/80 border border-indigo-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
+      
+      <button onclick="login()" class="w-full btn-theme py-4 rounded-xl mt-2 font-bold text-lg transition-all shadow-md transform hover:-translate-y-0.5">
+        로그인 시작
+      </button>
+      <p id="login-msg" class="text-red-500 text-sm text-center min-h-[20px]"></p>
+    </div>
   </div>
 
   <!-- 퀴즈 화면 -->
   <div id="quiz-screen" class="card p-8 max-w-md mx-auto mt-8 hidden">
     <div class="flex justify-between items-center mb-4 text-sm text-slate-500">
       <span id="q-progress" class="font-bold">문제 1 / 15</span>
-      <span id="timer" class="font-mono text-teal-600 font-bold">00:00</span>
+      <span id="timer" class="font-mono text-theme font-bold">00:00</span>
     </div>
     <div id="question-box" class="text-3xl font-bold text-center my-8 tracking-wider"></div>
-    <input type="number" id="answer-input" placeholder="정답 입력 후 Enter" class="w-full p-4 border-2 border-teal-200 rounded text-center text-xl focus:outline-teal-500 mb-2">
+    <input type="number" id="answer-input" placeholder="정답 입력 후 Enter" class="w-full p-4 border-2 border-theme-light rounded text-center text-xl outline-theme mb-2">
     <p id="feedback-icon" class="text-center text-4xl h-10"></p>
   </div>
 
   <!-- 결과 및 PDF 화면 (넓게 사용) -->
   <div id="result-screen" class="hidden mt-8">
     <!-- PDF로 캡처될 실제 영역 -->
-    <div id="pdf-content">
+    <div id="pdf-content">      
       
       <!-- [A4 1페이지 내용] -->
       <div id="pdf-page-1" class="card p-8">
         <!-- 1. 한 줄 제목 -->
-        <h2 id="pdf-title" class="text-2xl font-extrabold text-teal-700 text-center mt-2 mb-8 tracking-wide"></h2>
+        <h2 id="pdf-title" class="text-2xl font-extrabold text-theme text-center mt-2 mb-8 tracking-wide"></h2>
         
         <!-- 2. 요약 정보 한 줄 배치 -->
         <div class="flex justify-center items-center gap-6 text-base font-medium text-slate-600 mb-8 pb-4 border-b-2 border-slate-100">
-          <span>맞힌 개수: <span id="res-score" class="font-bold text-teal-600 text-lg"></span> / 15</span>
+          <span>맞힌 개수: <span id="res-score" class="font-bold text-theme text-lg"></span> / 15</span>
           <span class="text-slate-300">|</span>
-          <span>걸린 시간: <span id="res-time" class="font-bold text-teal-600 text-lg"></span>초</span>
+          <span>걸린 시간: <span id="res-time" class="font-bold text-theme text-lg"></span>초</span>
           <span class="text-slate-300">|</span>
-          <span>접속 일시: <span id="res-date" class="font-bold text-teal-600"></span></span>
+          <span>접속 일시: <span id="res-date" class="font-bold text-theme"></span></span>
         </div>
         
         <!-- 15문제 정오답표 -->
@@ -95,19 +159,18 @@
 
       <!-- [A4 2페이지 내용] 1쪽과 완벽히 동일한 조건 유지 -->
       <div id="pdf-page-2" class="card p-8" style="page-break-before: always;">
-        <h3 class="text-xl font-bold text-teal-700 mb-4 border-b pb-2">🤖 AI 선생님의 맞춤 피드백</h3>
+        <h3 class="text-xl font-bold text-theme mb-4 border-b pb-2">🤖 AI 선생님의 맞춤 피드백</h3>
         <!-- 오른쪽 노란선(border-r-4) 추가됨 -->
         <div id="ai-feedback-box" class="ai-feedback p-6 bg-yellow-50/50 border-l-4 border-r-4 border-yellow-400 text-base min-h-[300px] text-slate-700">
           <p class="text-center text-slate-500 italic mt-10">선생님이 학생의 풀이를 꼼꼼하게 분석하고 있어요... ⏳</p>
         </div>
       </div>
-
     </div> <!-- pdf-content 종료 -->
 
     <!-- 버튼 영역 (PDF 영역 밖이므로 출력 안됨) -->
     <div class="flex gap-4 mb-6 mt-6">
       <button onclick="downloadPDF()" id="pdf-btn" class="w-full bg-slate-800 text-white py-4 rounded font-bold text-lg hover:bg-slate-700 transition hidden shadow-lg">📥 내 결과 PDF로 저장하기</button>
-      <button onclick="retryQuiz()" id="retry-btn" class="w-full bg-teal-500 text-white py-4 rounded font-bold text-lg hover:bg-teal-400 transition hidden shadow-lg">🔄 다시 도전하기</button>
+      <button onclick="retryQuiz()" id="retry-btn" class="w-full btn-theme py-4 rounded font-bold text-lg transition hidden shadow-lg">🔄 다시 도전하기</button>
     </div>
 
     <!-- 명예의 전당 -->
@@ -125,7 +188,7 @@
 </div>
 
 <script>
-  // 🚨 주의: 선생님의 구글 앱스 스크립트 웹 앱 URL을 아래에 넣어주세요!
+  /* 🚨 주의: 선생님의 구글 앱스 스크립트 웹 앱 URL을 아래에 넣어주세요! */
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby19AWm9LX6aJGH7s0UZTS6vPM9Tp3AqUHynQCz2gX2a8CBNT4ADbWSirDHFvE_hclI/exec";
 
   let userInfo = {};
@@ -142,16 +205,21 @@
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
       
       if (isCorrect) {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
         gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        osc.start(); osc.stop(ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
       } else {
-        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(200, ctx.currentTime);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, ctx.currentTime);
         gain.gain.setValueAtTime(0.1, ctx.currentTime);
-        osc.start(); osc.stop(ctx.currentTime + 0.3);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.3);
       }
     } catch(e) {}
   }
@@ -166,6 +234,7 @@
       let op2 = Math.random() < 0.5 ? '+' : '-';
       
       let qStr = "", answer = 0;
+      
       if (i <= 7) {
         const fmt = (n) => n > 0 ? `(+${n})` : `(${n})`;
         qStr = `${fmt(a)} ${op1} ${fmt(b)} ${op2} ${fmt(c)}`;
@@ -190,9 +259,12 @@
     const name = document.getElementById('student-name').value.trim();
     const pw = document.getElementById('student-pw').value.trim();
     
-    if(!id || !name || !pw) return alert("학번, 이름, 비밀번호를 모두 입력해주세요.");
+    if(!id || !name || !pw) {
+      return alert("학번, 이름, 비밀번호를 모두 입력해주세요.");
+    }
     
     document.getElementById('login-msg').innerText = "인증 중...";
+    
     try {
       const res = await fetch(WEB_APP_URL, {
         method: 'POST',
@@ -222,7 +294,9 @@
     document.getElementById('leaderboard-list').innerHTML = '';
     
     generateQuestions();
-    score = 0; currentQIndex = 0; wrongLogs = [];
+    score = 0;
+    currentQIndex = 0;
+    wrongLogs = [];
     startTime = Date.now();
     
     timerInterval = setInterval(() => {
@@ -252,6 +326,7 @@
 
     const realAns = questions[currentQIndex].a;
     const isCorrect = userAns === realAns;
+    
     playSound(isCorrect);
     
     if (isCorrect) {
@@ -262,8 +337,8 @@
     }
 
     document.getElementById('feedback-icon').innerText = isCorrect ? '✅' : '❌';
-    
     currentQIndex++;
+    
     setTimeout(() => {
       if (currentQIndex < 15) showQuestion();
       else finishQuiz();
@@ -286,7 +361,7 @@
     document.getElementById('ai-feedback-box').innerHTML = "<p class='text-center text-slate-500 italic mt-10'>선생님이 학생의 풀이를 꼼꼼하게 분석하고 있어요... ⏳</p>";
 
     const tbody = document.getElementById('wrong-answers-tbody');
-    tbody.innerHTML = ''; 
+    tbody.innerHTML = '';
     
     const actualWrongLogs = wrongLogs.filter(log => !log.isCorrect);
 
@@ -298,13 +373,13 @@
         <td class="border border-slate-300 py-2 px-2 text-center font-bold text-slate-500">${log.no}</td>
         <td class="border border-slate-300 py-2 px-2 text-center tracking-wider">${log.q}</td>
         <td class="border border-slate-300 py-2 px-2 text-center ${userAnsStyle}">${log.u}</td>
-        <td class="border border-slate-300 py-2 px-2 text-center font-bold text-teal-600">${log.r}</td>
+        <td class="border border-slate-300 py-2 px-2 text-center font-bold text-theme">${log.r}</td>
         <td class="border border-slate-300 py-2 px-2 text-center font-extrabold text-lg">${resultIcon}</td>
       </tr>`;
     });
 
     if (actualWrongLogs.length === 0) {
-      document.getElementById('ai-feedback-box').innerHTML = "<h3 class='text-lg font-bold text-teal-700 mb-2'>🎉 완벽합니다!</h3><p>혼합계산의 원리를 완벽하게 이해하고 있네요. 모든 문제를 정확하게 풀어냈습니다. 앞으로도 이 기세를 몰아 수학에 자신감을 가지세요! 파이팅!</p>";
+      document.getElementById('ai-feedback-box').innerHTML = "<h3 class='text-lg font-bold text-theme mb-2'>🎉 완벽합니다!</h3><p>혼합계산의 원리를 완벽하게 이해하고 있네요. 모든 문제를 정확하게 풀어냈습니다. 앞으로도 이 기세를 몰아 수학에 자신감을 가지세요! 파이팅!</p>";
       await finalizeAndSend(timeTaken);
     } else {
       await getAIFeedback(timeTaken, actualWrongLogs);
@@ -312,7 +387,7 @@
   }
 
   async function getAIFeedback(timeTaken, actualWrongLogs) {
-    // 💡 백엔드 수정 없이 AI에게 문항 번호 표기를 강제하기 위한 데이터 가공 트릭!
+    /* 💡 백엔드 수정 없이 AI에게 문항 번호 표기를 강제하기 위한 데이터 가공 트릭! */
     const aiPayloadLogs = actualWrongLogs.map(log => ({
       "문항번호": `${log.no}번 (※ 피드백 설명 시 반드시 'n번 문제'라고 번호를 표기할 것)`,
       "문제": log.q,
@@ -320,7 +395,7 @@
       "정답": log.r
     }));
 
-    // 💡 [추가] AI가 'OO아' 하고 이름을 부르지 않도록 강력한 지시사항을 데이터 끝에 몰래 추가합니다.
+    /* 💡 [추가] AI가 'OO아' 하고 이름을 부르지 않도록 강력한 지시사항을 데이터 끝에 몰래 추가합니다. */
     aiPayloadLogs.push({
       "★피드백_작성_핵심_규칙★": "학생의 이름(OO아, ㅇㅇ아 등)을 부르는 표현을 절대 사용하지 마세요! 대신 '우리 학생', '우리 친구' 등 다정하고 보편적인 호칭을 사용하거나 호칭을 생략하세요. 말투는 '~해요', '~어때요?' 같은 따뜻하고 친절한 존댓말을 사용하세요."
     });
@@ -357,14 +432,14 @@
         scrollY: 0, 
         backgroundColor: '#ffffff',
         onclone: function(documentClone) {
-          // PDF를 캡처하기 위해 만든 임시 복제본에서 여백(spacer)을 완전히 삭제합니다.
-          // 이로써 그리는 위치와 자르는 위치가 완벽히 일치하게 되어 초록선이 제자리를 찾습니다.
+          /* PDF를 캡처하기 위해 만든 임시 복제본에서 여백(spacer)을 완전히 삭제합니다. */
+          /* 이로써 그리는 위치와 자르는 위치가 완벽히 일치하게 되어 초록선이 제자리를 찾습니다. */
           const spacer = documentClone.getElementById('pdf-spacer');
           if (spacer) spacer.style.display = 'none';
         }
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      // mode에 legacy 추가, avoid 배열에 텍스트 태그들을 지정하여 글씨 허리 잘림을 완벽히 방지
+      /* mode에 legacy 추가, avoid 배열에 텍스트 태그들을 지정하여 글씨 허리 잘림을 완벽히 방지 */
       pagebreak: { mode: ['css', 'legacy'], before: '#pdf-page-2', avoid: ['.ai-feedback p', '.ai-feedback h3', '.ai-feedback li'] } 
     };
   }
@@ -419,7 +494,7 @@
           <span class="font-bold text-slate-700">${icon} ${i+1}위 - ${b.name}(${b.id})</span>
           ${dateStr}
         </div>
-        <span class="font-bold text-teal-600">${b.score}점 <span class="text-xs text-slate-500 font-normal">(${b.time}초)</span></span>
+        <span class="font-bold text-theme">${b.score}점 <span class="text-xs text-slate-500 font-normal">(${b.time}초)</span></span>
       </li>`;
     });
   }
