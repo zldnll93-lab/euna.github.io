@@ -557,7 +557,7 @@
             // 1. 상단 정보 렌더링 (절대 유지)
             const id = state.student.studentId || '학번미상';
             const name = state.student.studentName || '이름미상';
-            document.getElementById('report-title').innerText = `${id} ${name} 학생의 학습 결과 리포트`;
+            document.getElementById('report-title').innerText = `${id} ${name} 학생의 (유리수의 곱셈과 나눗셈) 리포트`;
             
             document.getElementById('report-correct').innerHTML = `<i class="fa-solid fa-check text-sky-500 mr-2"></i>맞힌 개수: <span class="font-bold text-sky-700">${correct} / 15</span>`;
             document.getElementById('report-time').innerHTML = `<i class="fa-regular fa-clock text-slate-400 mr-2"></i>걸린 시간: <span class="font-bold text-slate-700">${time}초</span>`;
