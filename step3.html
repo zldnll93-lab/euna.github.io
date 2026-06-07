@@ -124,7 +124,7 @@
         <div id="sec-result" class="hidden flex-col space-y-6 w-full">
             
             <!-- [핵심] 이 pdf-content 영역 전체가 A4 용지 형태로 캡처되어 PDF로 변환됩니다. -->
-            <div id="pdf-content" class="bg-white rounded-2xl shadow-sm border border-teal-100 overflow-hidden">
+            <div id="pdf-content" class="bg-white">
                 
                 <!-- ====== PDF 1쪽 파트: 제목, 정보, 정오답표 ====== -->
                 <div class="p-8">
@@ -483,7 +483,7 @@
                 feedbackText = "⚠️ AI 피드백을 생성하지 못했습니다.";
             }
 
-            // --- [특수 처리] 학생 이름 다정하게 부르기 및 맞춤법(아/야) 완벽 교정 ---
+            // --- [특수 처리] 학생 이름 다정하게 부르기 및 호칭(학생) 완벽 교정 ---
             const studentFullName = state.student.studentName || "";
             let firstName = "";
             let searchNames = [];
@@ -500,19 +500,15 @@
             }
 
             if (firstName) {
-                const lastCharCode = firstName.charCodeAt(firstName.length - 1);
-                let hasJongseong = true;
-                if (lastCharCode >= 0xAC00 && lastCharCode <= 0xD7A3) {
-                    hasJongseong = (lastCharCode - 0xAC00) % 28 > 0;
-                }
-                const correctParticle = hasJongseong ? '아' : '야';
-
                 searchNames.push(firstName);
+
+                // 1. AI가 (전체이름+아/야) 또는 (이름+아/야) 라고 부른 경우 -> "OO 학생"으로 교정
                 searchNames.forEach(name => {
                     const wrongCallRegex = new RegExp(name + '[아야]', 'g');
-                    feedbackText = feedbackText.replace(wrongCallRegex, firstName + correctParticle);
+                    feedbackText = feedbackText.replace(wrongCallRegex, firstName + ' 학생');
                 });
 
+                // 2. 조사가 붙지 않은 나머지 풀네임 치환 (예: "김지수 학생은" -> "지수 학생은")
                 searchNames.forEach(name => {
                     if(name !== firstName) {
                         const nameRegex = new RegExp(name, 'g');
@@ -522,12 +518,9 @@
             }
             // ------------------------------------------
 
-            // --- [핵심 추가] AI의 불필요한 LaTeX(라텍) 수식 문법 제거 및 치환 ---
-            // 1. \times 를 실제 곱하기 기호(×)로 변경
-            feedbackText = feedbackText.replace(/\\times/g, '×');
-            
-            // 2. 수식을 감싸는 $ 달러 기호 제거 (예: $2^3$ -> 2^3)
-            feedbackText = feedbackText.replace(/\$/g, '');
+            // --- [특수 처리] 가독성을 위해 '설명:' 앞에서 강제 줄바꿈 ---
+            // AI가 '정답: ~ 설명: ~' 형식으로 한 줄에 붙여서 보낸 경우, 강제로 두 줄 바꿈(\n\n)을 넣어 분리합니다.
+            feedbackText = feedbackText.replace(/(정답:.*?)\s*(?:\*\*설명:\*\*|설명:)/g, '$1\n\n**설명:** ');
             // ------------------------------------------
 
             // 마크다운 문법을 HTML로 먼저 변환
@@ -575,10 +568,10 @@
                     const opt = {
                         margin:       [15, 10, 15, 10],
                         filename:     'temp.pdf',
-                        image:        { type: 'jpeg', quality: 0.98 },
-                        html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+                        // [최적화 수정] 백그라운드 업로드용 PDF의 압축률과 스케일을 낮춰 Payload Too Large 오류(Failed to fetch) 방지
+                        image:        { type: 'jpeg', quality: 0.8 }, 
+                        html2canvas:  { scale: 1, useCORS: true, letterRendering: true, scrollY: 0 }, 
                         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                        // [최적화] CSS 규칙을 존중하되, 과잉 방어(avoid-all, legacy)는 뺌
                         pagebreak:    { mode: 'css' }
                     };
 
@@ -587,6 +580,7 @@
                         try {
                             await fetch(GAS_URL, {
                                 method: 'POST',
+                                mode: 'no-cors', // [최적화 수정] 큰 용량의 비동기 전송 시 CORS 차단으로 인한 통신 실패를 방지
                                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                                 body: JSON.stringify({
                                     action: 'uploadPdf',
@@ -616,6 +610,7 @@
             const opt = {
                 margin:       [15, 10, 15, 10],
                 filename:     `${state.student.studentId || '학번'}_${state.student.studentName || '이름'}_학습결과.pdf`,
+                // 로컬 다운로드용은 고화질(scale: 2, quality: 0.98) 원본 화질 유지
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
