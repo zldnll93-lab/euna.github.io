@@ -1,448 +1,615 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>정수 연산 마스터</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 클라이언트 측 PDF 생성을 위한 라이브러리 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  <style>
-    body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; }
-    .hidden { display: none; }
-    
-    /* PDF 출력용 컨테이너 (자동 맞춤 및 잘림 완벽 방지) */
-    #pdf-wrapper {
-      display: none; /* 평소에는 완전히 숨김 */
-    }
-    
-    #pdf-container { 
-      width: 650px; /* 💡 너비를 700px에서 650px로 더 줄여 여백 공간을 추가 확보 */
-      background: white; 
-      padding: 15px; /* 💡 패딩을 줄여 표가 차지하는 가로 공간 확보 */
-      color: #000;
-      box-sizing: border-box;
-      margin: 0 auto;
-    }
-    .pdf-header-title { text-align: center; color: #1e3a8a; margin-bottom: 15px; font-size: 20px; font-weight: bold; }
-    .pdf-info-box { margin-bottom: 12px; font-size: 13px; line-height: 1.5; }
-    
-    .pdf-table { width: 100%; border-collapse: collapse; margin-top: 5px; color: #000; table-layout: fixed; }
-    .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 3px 4px; text-align: center; font-size: 11px; } /* 💡 폰트와 패딩을 미세 조정 */
-    .pdf-table th { background-color: #e5e7eb; font-weight: bold; }
-    .pdf-table tr { page-break-inside: avoid; break-inside: avoid; }
-    .pdf-table .col-res-o { color: #15803d; font-weight: bold; font-size: 12px; }
-    .pdf-table .col-res-x { color: #dc2626; font-weight: bold; font-size: 12px; }
-    
-    .pdf-feedback-box { 
-      margin-top: 15px; 
-      padding: 10px; 
-      background-color: #f8fafc; 
-      border: 1px solid #cbd5e1; 
-      border-radius: 8px;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    .pdf-feedback-box h3 { color: #1e40af; margin-top:0; border-bottom: 2px solid #1e40af; padding-bottom: 5px; font-size: 14px; }
-    .pdf-feedback-content { line-height: 1.4; font-size: 12px; white-space: pre-wrap; margin-top: 5px;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정수의 덧셈·뺄셈 마스터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body {
+            background-color: #fffdf0; /* 은은한 봄 파스텔 노란색 배경 */
+            font-family: 'Pretendard', sans-serif;
+            overflow-x: hidden;
+        }
+                
+        /* 정오답 애니메이션 (도장 효과) */
+        .stamp-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+        .stamp-show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1) rotate(-10deg);
+        }
+
+        /* 퀴즈 박스 흔들림 애니메이션 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .shake-anim { animation: shake 0.4s ease-in-out; }
+
+        /* 결과창 표 스타일 (PDF 변환 시 깨짐 방지 및 세로 높이 최적화) */
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .print-table th, .print-table td {
+            border: 1px solid #cbd5e1;
+            padding: 11px 8px; 
+            text-align: center;
+        }
+        .print-table th {
+            background-color: #f8fafc;
+            font-weight: 700;
+            color: #475569;
+        }
+        .print-table td {
+            color: #334155;
+        }
+
+        /* PDF 페이지 넘김 시 문장 중간이 잘리는 것 방지 및 강제 넘김 규칙 추가 */
+        .html2pdf__page-break {
+            page-break-before: always !important;
+            break-before: page !important;
+        }
+        
+        #ai-feedback-display p, 
+        #ai-feedback-display li {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+    </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="text-slate-800 min-h-screen p-4 md:p-8 flex flex-col items-center">
 
-  <!-- 로그인 화면 -->
-  <div id="login-screen" class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-    <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">정수 연산 마스터 로그인</h1>
-    <div class="space-y-4">
-      <input type="text" id="student-id" placeholder="학번 (예: 10101)" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-      <input type="text" id="student-name" placeholder="이름" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-      <input type="password" id="student-pw" placeholder="비밀번호" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-      <button onclick="login()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">로그인 및 시작</button>
-    </div>
-    <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden"></p>
-  </div>
-
-  <!-- 게임 화면 -->
-  <div id="game-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-    <div class="flex justify-between items-center mb-6">
-      <span id="question-counter" class="text-lg font-bold text-gray-600">문제: 1 / 15</span>
-      <span id="timer-display" class="text-lg font-bold text-red-500">시간: 0.0초</span>
-    </div>
-    <div class="text-center my-10">
-      <div id="question-text" class="text-5xl font-black tracking-widest text-gray-800"></div>
-    </div>
-    <div class="flex gap-4">
-      <input type="number" id="answer-input" placeholder="정답 입력" class="flex-1 text-2xl text-center px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" onkeypress="if(event.key === 'Enter') submitAnswer()">
-      <button onclick="submitAnswer()" class="bg-blue-600 text-white font-bold px-8 py-3 rounded-xl hover:bg-blue-700 text-xl transition">입력</button>
-    </div>
-  </div>
-
-  <!-- 로딩 화면 -->
-  <div id="loading-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600 border-solid mx-auto mb-4"></div>
-    <h2 class="text-xl font-bold text-gray-700">채점 및 피드백 생성 중...</h2>
-    <p class="text-gray-500 mt-2">잠시만 기다려주세요.</p>
-  </div>
-
-  <!-- 결과 화면 -->
-  <div id="result-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl">
-    <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">퀴즈 결과</h1>
-    
-    <div class="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg mb-6">
-      <div class="text-gray-600">학번: <span id="res-id" class="font-bold text-black"></span></div>
-      <div class="text-gray-600">이름: <span id="res-name" class="font-bold text-black"></span></div>
-      <div class="text-gray-600">맞힌 개수: <span id="res-score" class="font-bold text-blue-600 text-xl"></span> / 15</div>
-      <div class="text-gray-600">걸린 시간: <span id="res-time" class="font-bold text-red-500 text-xl"></span>초</div>
-      <div class="text-gray-600 col-span-2 text-sm">접속 시간: <span id="res-login-time"></span></div>
-    </div>
-
-    <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-6 max-h-48 overflow-y-auto">
-      <h3 class="font-bold text-blue-800 mb-2">👨‍🏫 선생님의 피드백</h3>
-      <p id="res-feedback" class="text-gray-700 leading-relaxed text-sm whitespace-pre-wrap"></p>
-    </div>
-
-    <div class="flex flex-col gap-3">
-      <button onclick="downloadPdf()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">📄 정오답 PDF 다운로드</button>
-      <button onclick="showLeaderboard()" class="w-full bg-yellow-500 text-white font-bold py-3 rounded-lg hover:bg-yellow-600 transition">🏆 명예의 전당 보기</button>
-    </div>
-  </div>
-
-  <!-- 명예의 전당 화면 -->
-  <div id="leaderboard-screen" class="hidden bg-white p-8 rounded-xl shadow-lg w-full max-w-3xl">
-    <h1 class="text-3xl font-bold text-center text-yellow-600 mb-6">🏆 명예의 전당 (Top 30)</h1>
-    <div class="overflow-y-auto max-h-96 border rounded-lg">
-      <table class="w-full text-center">
-        <thead class="bg-gray-100 sticky top-0">
-          <tr>
-            <th class="py-2">순위</th>
-            <th class="py-2">학번</th>
-            <th class="py-2">이름</th>
-            <th class="py-2">맞힌 개수</th>
-            <th class="py-2">걸린 시간</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body" class="divide-y"></tbody>
-      </table>
-    </div>
-    <div class="mt-6 text-center">
-      <button onclick="location.reload()" class="bg-gray-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-700 transition">처음으로</button>
-    </div>
-  </div>
-
-  <!-- PDF 생성용 템플릿 -->
-  <div id="pdf-wrapper">
-    <div id="pdf-container">
-      <div class="pdf-header-title">정수 연산 퀴즈 결과 분석표</div>
-      <div class="pdf-info-box">
-        <p><strong>학번:</strong> <span id="pdf-id"></span> | <strong>이름:</strong> <span id="pdf-name"></span></p>
-        <p><strong>맞힌 개수:</strong> <span id="pdf-score"></span>/15 | <strong>걸린 시간:</strong> <span id="pdf-time"></span>초 | <strong>로그인 시간:</strong> <span id="pdf-login"></span></p>
-      </div>
-      
-      <!-- 15문제 표 출력 영역 -->
-      <table class="pdf-table">
-        <thead>
-          <tr>
-            <th style="width: 15%;">번호</th>
-            <th style="width: 35%;">문제</th>
-            <th style="width: 20%;">학생의 답</th>
-            <th style="width: 20%;">정답</th>
-            <th style="width: 10%;">결과</th>
-          </tr>
-        </thead>
-        <tbody id="pdf-table-body"></tbody>
-      </table>
-      
-      <!-- AI 수학 피드백 영역 -->
-      <div class="pdf-feedback-box">
-        <h3>👨‍🏫 선생님의 맞춤형 피드백</h3>
-        <div id="pdf-feedback" class="pdf-feedback-content"></div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwWgVYXrwPFEzx8NBszn8R6I6hkil86GkrBd1o0C_No4aQH1TUvFU9OK4An24GEclua5g/exec';
-
-    async function apiCall(payload) {
-      try {
-        const response = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        return await response.json();
-      } catch (e) {
-        console.error(e);
-        return { success: false, message: '통신 오류가 발생했습니다.' };
-      }
-    }
-
-    let userInfo = { id: '', name: '', loginTime: '' };
-    let questions = [];
-    let currentQIndex = 0;
-    let score = 0;
-    let startTime, timerInterval;
-
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playTone(freq, type, duration) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      osc.type = type;
-      osc.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      osc.start();
-      gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-      osc.stop(audioCtx.currentTime + duration);
-    }
-    function playCorrect() { playTone(600, 'sine', 0.1); setTimeout(() => playTone(800, 'sine', 0.15), 100); }
-    function playIncorrect() { playTone(250, 'sawtooth', 0.3); }
-
-    function showScreen(id) {
-      ['login-screen', 'game-screen', 'loading-screen', 'result-screen', 'leaderboard-screen'].forEach(s => {
-        document.getElementById(s).classList.add('hidden');
-      });
-      document.getElementById(id).classList.remove('hidden');
-    }
-
-    function login() {
-      const id = document.getElementById('student-id').value.trim();
-      const name = document.getElementById('student-name').value.trim();
-      const pw = document.getElementById('student-pw').value.trim();
-      const errEl = document.getElementById('login-error');
-
-      if (!id || !name || !pw) {
-        errEl.innerText = '모든 필드를 입력해주세요.';
-        errEl.classList.remove('hidden');
-        return;
-      }
-
-      errEl.innerText = '확인 중...';
-      errEl.classList.remove('hidden');
-      errEl.classList.replace('text-red-500', 'text-blue-500');
-
-      apiCall({ action: 'verifyLogin', id, name, pw }).then((res) => {
-        if (res.success) {
-          userInfo = { id, name, loginTime: new Date().toLocaleString() };
-          startGame();
-        } else {
-          errEl.innerText = res.message;
-          errEl.classList.replace('text-blue-500', 'text-red-500');
-        }
-      });
-    }
-
-    function startGame() {
-      generateQuestions();
-      currentQIndex = 0;
-      score = 0;
-      showScreen('game-screen');
-      startTime = Date.now();
-      
-      timerInterval = setInterval(() => {
-        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-        document.getElementById('timer-display').innerText = `시간: ${elapsed}초`;
-      }, 100);
-
-      renderQuestion();
-      document.getElementById('answer-input').focus();
-    }
-
-    function generateQuestions() {
-      questions = [];
-      let posPosCount = 0;
-      while (questions.length < 15) {
-        let a = Math.floor(Math.random() * 41) - 20; 
-        let b = Math.floor(Math.random() * 41) - 20;
-        let op = Math.random() < 0.5 ? '+' : '-';
-
-        let strA = a < 0 ? `(${a})` : `${a}`;
-        let strB = b < 0 ? `(${b})` : `${b}`;
+    <!-- 최상위 컨테이너: 로그인/퀴즈(max-w-md), 결과창(max-w-4xl) 동적 크기 변경 -->
+    <div id="main-container" class="w-full max-w-md mx-auto space-y-6 pb-4 transition-all duration-500 ease-in-out">
         
-        let isPosPos = (a >= 0 && b >= 0);
-        if (isPosPos) {
-          if (posPosCount >= 2) continue; 
-          posPosCount++;
+        <div class="text-center mt-6 mb-8">
+            <h1 class="text-3xl font-bold text-amber-700 mb-2"><i class="fa-solid fa-calculator mr-2"></i>정수의 덧셈·뺄셈 마스터</h1>
+            <p class="text-amber-600/80 text-sm">중학교 1학년 정수의 계산 정복하기</p>
+        </div>
+
+        <!-- 로그인 섹션 (투명한 파스텔 유리 느낌) -->
+        <div id="sec-login" class="bg-white/50 backdrop-blur-md p-8 rounded-3xl shadow-[0_8px_30px_rgb(217,119,6,0.06)] border border-amber-50 flex flex-col space-y-5">
+            <h2 class="text-xl font-bold text-amber-800 text-center mb-2">시작하기 전에</h2>
+            <input type="text" id="studentId" autofocus placeholder="학번 (예: 10101)" class="w-full p-4 bg-white/70 border border-amber-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
+            <input type="text" id="studentName" placeholder="이름" class="w-full p-4 bg-white/70 border border-amber-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
+            <input type="password" id="studentPw" placeholder="비밀번호" class="w-full p-4 bg-white/70 border border-amber-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:bg-white transition-all text-slate-700 placeholder-slate-400">
+            
+            <button onclick="handleLogin()" id="loginBtn" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl mt-2 transition-all shadow-md transform hover:-translate-y-0.5">
+                로그인 및 시작
+            </button>
+            <p id="login-error" class="text-red-500 text-sm text-center hidden">정보가 일치하지 않습니다. 다시 확인해주세요.</p>
+        </div>
+
+        <!-- 퀴즈 섹션 -->
+        <div id="sec-quiz" class="hidden bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-amber-50 flex-col relative">
+            <div class="flex justify-between items-center mb-6 border-b border-amber-100 pb-4">
+                <div class="text-amber-800 font-bold bg-amber-100/60 px-3 py-1 rounded-full">문제 <span id="q-idx">1</span> / 15</div>
+                <div id="quiz-timer" class="text-slate-400 font-mono"><i class="fa-regular fa-clock mr-1"></i>00:00</div>
+            </div>
+
+            <div id="stamp-correct" class="stamp-overlay text-emerald-500 text-8xl"><i class="fa-regular fa-circle"></i></div>
+            <div id="stamp-wrong" class="stamp-overlay text-rose-500 text-8xl"><i class="fa-solid fa-xmark"></i></div>
+
+            <div id="quiz-box" class="py-12 flex flex-col items-center">
+                <div id="question-display" class="text-4xl md:text-5xl font-serif text-slate-800 mb-8 h-20 flex items-center justify-center whitespace-nowrap"></div>
+                <input type="number" id="answer-input" placeholder="정답 입력 후 엔터 ⏎" class="w-full md:w-3/4 p-4 text-center text-lg bg-amber-50/50 border-b-2 border-amber-300 focus:outline-none focus:border-amber-500 focus:bg-white transition-all rounded-t-lg text-slate-700">
+            </div>
+
+            <div class="w-full bg-amber-100 rounded-full h-2 mt-4">
+                <div id="progress-bar" class="bg-amber-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- 로딩 섹션 -->
+        <div id="sec-loading" class="hidden bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-sm border border-amber-50 text-center py-16">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-amber-100 border-t-amber-500 mb-4"></div>
+            <h3 class="text-xl font-bold text-slate-700 mb-2">결과 분석 중...</h3>
+            <p class="text-slate-500 text-sm">AI 선생님이 피드백을 작성하고 리포트를 구성하고 있어요.</p>
+        </div>
+
+        <!-- 결과 섹션 -->
+        <div id="sec-result" class="hidden flex-col space-y-6 w-full">
+            
+            <div id="pdf-content" class="bg-white">
+                
+                <!-- ====== PDF 1쪽 파트: 제목, 정보, 정오답표 ====== -->
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 id="report-title" class="text-3xl font-bold text-amber-800 tracking-tight"></h1>
+                        <!-- 제목과 서브정보 사이의 여백을 글씨 높이만큼 키움 (h-2 -> h-8) -->
+                        <div class="h-8"></div>
+                        <div class="flex flex-wrap justify-center items-center gap-4 text-slate-600 font-medium">
+                            <span id="report-correct"></span>
+                            <span class="text-slate-300">|</span>
+                            <span id="report-time"></span>
+                            <span class="text-slate-300">|</span>
+                            <span id="report-date"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%;">번호</th>
+                                    <th style="width: 35%;">문제</th>
+                                    <th style="width: 20%;">나의 답</th>
+                                    <th style="width: 20%;">정답</th>
+                                    <th style="width: 15%;">결과</th>
+                                </tr>
+                            </thead>
+                            <tbody id="result-table-body">
+                                <!-- 동적 생성 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 페이지 넘김 마커 (PDF 출력 시 피드백은 무조건 2쪽으로 강제 정렬) -->
+                <div class="html2pdf__page-break" style="page-break-before: always; break-before: page;"></div>
+
+                <!-- ====== PDF 2쪽 파트: AI 피드백 ====== -->
+                <div class="p-8 border-t-2 border-amber-50 sm:border-none" style="page-break-before: always; break-before: page;">
+                    <h2 class="text-2xl font-bold text-amber-700 mb-6 flex items-center">
+                        <i class="fa-solid fa-chalkboard-user mr-3"></i>AI 선생님의 맞춤형 피드백
+                    </h2>
+                    <div id="ai-feedback-display" class="prose prose-amber max-w-none text-slate-700 p-6 bg-amber-50/50 rounded-xl border border-amber-100">
+                        <!-- AI 피드백 내용 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 하단 버튼 영역 -->
+            <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                <button id="pdf-download-btn" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl shadow-sm transition-colors flex justify-center items-center text-lg">
+                    <i class="fa-solid fa-file-pdf mr-2"></i>내 학습결과 리포트 PDF 다운로드
+                </button>
+                <button onclick="location.reload()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-4 rounded-xl shadow-sm transition-colors text-lg">
+                    <i class="fa-solid fa-rotate-right mr-2"></i>다시 도전하기
+                </button>
+            </div>
+
+            <!-- 명예의 전당 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-amber-50 mt-2">
+                <h3 class="text-lg font-bold text-slate-700 mb-4 flex items-center"><i class="fa-solid fa-trophy text-yellow-400 mr-2"></i>명예의 전당 (TOP 30)</h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-sm text-left whitespace-nowrap">
+                        <thead class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3 text-center">순위</th>
+                                <th class="px-4 py-3">이름</th>
+                                <th class="px-4 py-3 text-center">점수</th>
+                                <th class="px-4 py-3 text-center">기록</th>
+                                <th class="px-4 py-3 text-center">로그인 일시</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ranking-body" class="divide-y divide-slate-100">
+                            <!-- 랭킹 생성 -->
+                        </tbody>
+                    </table>
+                </div>
+                <button onclick="location.reload()" class="w-full mt-6 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 rounded-xl transition-colors">
+                    처음으로 돌아가기
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center text-slate-400 text-sm font-medium tracking-wide">
+            Made by Euna for Math Education
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"></audio>
+    <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/2004/2004-preview.mp3"></audio>
+
+    <script>
+        function customAlert(message) {
+            const overlay = document.createElement('div');
+            overlay.className = 'fixed inset-0 bg-slate-900/50 flex items-center justify-center z-50';
+            const box = document.createElement('div');
+            box.className = 'bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full mx-4 text-center';
+            box.innerHTML = `
+                <p class="text-slate-700 mb-6 font-medium">${message}</p>
+                <button class="bg-amber-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-600 w-full transition-colors">확인</button>
+            `;
+            box.querySelector('button').onclick = () => document.body.removeChild(overlay);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
         }
 
-        let answer = (op === '+') ? (a + b) : (a - b);
-        let qText = `${strA} ${op} ${strB} = ?`;
-        questions.push({ a, b, op, text: qText, answer: answer, userAns: null, isCorrect: false });
-      }
-    }
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwWgVYXrwPFEzx8NBszn8R6I6hkil86GkrBd1o0C_No4aQH1TUvFU9OK4An24GEclua5g/exec';
 
-    function renderQuestion() {
-      document.getElementById('question-counter').innerText = `문제: ${currentQIndex + 1} / 15`;
-      document.getElementById('question-text').innerText = questions[currentQIndex].text.replace(' = ?', '');
-      document.getElementById('answer-input').value = '';
-    }
-
-    function submitAnswer() {
-      const inputEl = document.getElementById('answer-input');
-      const userVal = parseInt(inputEl.value);
-      
-      if (isNaN(userVal)) return;
-
-      const q = questions[currentQIndex];
-      q.userAns = userVal;
-      
-      if (userVal === q.answer) {
-        q.isCorrect = true;
-        score++;
-        playCorrect();
-      } else {
-        q.isCorrect = false;
-        playIncorrect();
-      }
-
-      currentQIndex++;
-      if (currentQIndex < 15) {
-        renderQuestion();
-        inputEl.focus();
-      } else {
-        endGame();
-      }
-    }
-
-    function endGame() {
-      clearInterval(timerInterval);
-      const totalTime = ((Date.now() - startTime) / 1000).toFixed(1);
-      showScreen('loading-screen');
-
-      document.getElementById('res-id').innerText = userInfo.id;
-      document.getElementById('res-name').innerText = userInfo.name;
-      document.getElementById('res-score').innerText = score;
-      document.getElementById('res-time').innerText = totalTime;
-      document.getElementById('res-login-time').innerText = userInfo.loginTime;
-
-      document.getElementById('pdf-id').innerText = userInfo.id;
-      document.getElementById('pdf-name').innerText = userInfo.name;
-      document.getElementById('pdf-score').innerText = score;
-      document.getElementById('pdf-time').innerText = totalTime;
-      document.getElementById('pdf-login').innerText = userInfo.loginTime;
-
-      let wrongList = [];
-      let tbodyHtml = '';
-      questions.forEach((q, idx) => {
-        if (!q.isCorrect) wrongList.push(`${q.text.replace(' = ?','')} (학생답:${q.userAns}, 정답:${q.answer})`);
-        
-        let resHtml = q.isCorrect ? '<span class="col-res-o">O</span>' : '<span class="col-res-x">X</span>';
-        tbodyHtml += `<tr>
-          <td>${idx + 1}</td>
-          <td>${q.text.replace(' = ?','')}</td>
-          <td>${q.userAns}</td>
-          <td>${q.answer}</td>
-          <td>${resHtml}</td>
-        </tr>`;
-      });
-      document.getElementById('pdf-table-body').innerHTML = tbodyHtml;
-      
-      const wrongListStr = wrongList.length > 0 ? wrongList.join(", ") : "틀린 문제가 없습니다. 완벽합니다!";
-
-      apiCall({ action: 'getFeedback', score: score, time: totalTime, wrongListStr: wrongListStr }).then((res) => {
-        let feedback = res.feedback || res.message;
-        if (feedback) {
-          feedback = feedback.replace(/\[학생 이름\]/g, userInfo.name);
-          feedback = feedback.replace(/\[학생이름\]/g, userInfo.name);
-          const lastChar = userInfo.name.charCodeAt(userInfo.name.length - 1);
-          const hasBatchim = (lastChar - 0xac00) % 28 > 0;
-          const josa = hasBatchim ? '아' : '야';
-          feedback = feedback.replace(/oo야/g, userInfo.name + josa);
-          feedback = feedback.replace(/oo아/g, userInfo.name + josa);
-          feedback = feedback.replace(/oo/g, userInfo.name);
-          feedback = feedback.replace(/\*\*/g, ''); 
-          feedback = feedback.replace(/\$/g, '');   
-          feedback = feedback.replace(/`/g, '');    
-          feedback = feedback.replace(/\\/g, '');   
+        async function apiCall(payload) {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    redirect: 'follow', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (e) {
+                console.error('Fetch 통신 오류:', e);
+                return { 
+                    success: false, 
+                    message: '통신 오류가 발생했습니다. 구글 앱스 스크립트가 새 버전으로 올바르게 배포되었는지(액세스 권한: 모든 사용자) 확인해 주세요.' 
+                };
+            }
         }
-        document.getElementById('res-feedback').innerText = feedback;
-        document.getElementById('pdf-feedback').innerText = feedback;
-        createAndSavePDF(totalTime);
-      });
-    }
 
-    function getPdfOptions() {
-      return {
-        margin:       [10, 10, 10, 10],
-        filename:     `${userInfo.id}_${userInfo.name}_연산결과.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true }, 
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css'] }
-      };
-    }
+        let state = {
+            student: {},
+            questions: [],
+            results: [],
+            currentIndex: 0,
+            startTime: null,
+            timerInterval: null
+        };
 
-    function createAndSavePDF(totalTime) {
-      const wrapper = document.getElementById('pdf-wrapper');
-      const container = document.getElementById('pdf-container');
-      wrapper.style.display = 'block';
-      wrapper.style.position = 'absolute';
-      wrapper.style.top = '0';
-      wrapper.style.left = '50%';
-      wrapper.style.transform = 'translateX(-50%)';
-      wrapper.style.zIndex = '-1000';
-      
-      html2pdf().set(getPdfOptions()).from(container).outputPdf('datauristring').then(function(pdfBase64) {
-        wrapper.style.display = 'none';
-        wrapper.style.position = '';
-        wrapper.style.top = '';
-        wrapper.style.left = '';
-        wrapper.style.transform = '';
-        const base64Data = pdfBase64.split(',')[1];
-        apiCall({
-          action: 'saveRecordAndPdf',
-          id: userInfo.id,
-          name: userInfo.name,
-          loginTime: userInfo.loginTime,
-          score: score,
-          time: totalTime,
-          pdfBase64Data: base64Data
-        }).then((res) => {
-          showScreen('result-screen');
+        function showSection(secId) {
+            ['sec-login', 'sec-quiz', 'sec-loading', 'sec-result'].forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.add('hidden');
+                el.classList.remove('flex', 'flex-col');
+            });
+            const target = document.getElementById(secId);
+            target.classList.remove('hidden');
+            
+            if (secId === 'sec-result') {
+                document.getElementById('main-container').classList.remove('max-w-md');
+                document.getElementById('main-container').classList.add('max-w-4xl');
+                target.classList.add('flex', 'flex-col');
+            } else if (secId === 'sec-login' || secId === 'sec-quiz') {
+                document.getElementById('main-container').classList.add('max-w-md');
+                document.getElementById('main-container').classList.remove('max-w-4xl');
+                target.classList.add('flex', 'flex-col');
+            } else if (secId === 'sec-loading') {
+                target.classList.add('block');
+            }
+        }
+
+        // --- 💡 [핵심] 정교한 15문제 세트 자동 구성 로직 ---
+        function generateQuestionSet() {
+            let validSet = false;
+            let finalQuestions = [];
+
+            while (!validSet) {
+                let questions = [];
+                // 1. 덧셈 7개, 뺄셈 8개 배치
+                let ops = ['+', '+', '+', '+', '+', '+', '+', '-', '-', '-', '-', '-', '-', '-', '-'];
+                
+                // 연산자 순서 랜덤 셔플
+                for (let i = ops.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [ops[i], ops[j]] = [ops[j], ops[i]];
+                }
+
+                let posPosAddCount = 0;
+                let negativeAnswerCount = 0;
+
+                for (let i = 0; i < 15; i++) {
+                    let a, b, answer, isPosPosAdd;
+                    let validQuestion = false;
+
+                    while (!validQuestion) {
+                        // 0 제외: 부호 표기를 명확하게 하기 위해 1~20 사이의 양수/음수만 생성
+                        let getNum = () => {
+                            let n = Math.floor(Math.random() * 20) + 1; // 1~20 사이의 숫자
+                            return Math.random() < 0.5 ? n : -n;
+                        };
+
+                        a = getNum();
+                        b = getNum();
+                        let op = ops[i];
+                        
+                        answer = (op === '+') ? (a + b) : (a - b);
+                        
+                        // 2. 양수 + 양수 조건 확인
+                        isPosPosAdd = (a > 0 && b > 0 && op === '+');
+
+                        // 양수+양수 문제가 1개를 초과하려 하면 재성성
+                        if (isPosPosAdd && posPosAddCount >= 1) continue;
+
+                        validQuestion = true;
+                        if (isPosPosAdd) posPosAddCount++;
+                    }
+
+                    // 3. 양수는 무조건 (+), 음수는 (-) 괄호 포맷팅
+                    let strA = a > 0 ? `(+${a})` : `(${a})`;
+                    let strB = b > 0 ? `(+${b})` : `(${b})`;
+                    let qText = `${strA} ${ops[i]} ${strB}`;
+
+                    // 4. 음수 정답 카운트
+                    if (answer < 0) negativeAnswerCount++;
+
+                    questions.push({
+                        questionHtml: qText,
+                        questionText: qText,
+                        answerVal: answer,
+                        correctAnswerStr: String(answer)
+                    });
+                }
+
+                // 5. 전체 15문제의 세트 조건 완벽 검증 (음수정답 8개 이상 & 양수+양수 정확히 1개)
+                if (posPosAddCount === 1 && negativeAnswerCount >= 8) {
+                    finalQuestions = questions;
+                    validSet = true;
+                }
+            }
+            return finalQuestions;
+        }
+
+        async function handleLogin() {
+            const btn = document.getElementById('loginBtn');
+            const id = document.getElementById('studentId').value.trim();
+            const name = document.getElementById('studentName').value.trim();
+            const pw = document.getElementById('studentPw').value.trim();
+
+            if (!id || !name || !pw) {
+                customAlert("정보를 모두 입력해주세요."); return;
+            }
+
+            btn.innerText = "확인 중..."; btn.disabled = true;
+
+            apiCall({ action: 'verifyLogin', id, name, pw }).then((res) => {
+                if (res.success) {
+                    state.student = { id, name, loginTime: new Date().toLocaleString() };
+                    startQuiz();
+                } else {
+                    document.getElementById('login-error').classList.remove('hidden');
+                    btn.innerText = "로그인 및 시작"; btn.disabled = false;
+                }
+            }).catch(() => {
+                customAlert("서버 통신 오류가 발생했습니다.");
+                btn.innerText = "로그인 및 시작"; btn.disabled = false;
+            });
+        }
+
+        function startQuiz() {
+            // 위에서 만든 정교한 문제 세트 로직으로 질문 배열 초기화
+            state.questions = generateQuestionSet();
+            
+            state.currentIndex = 0;
+            state.results = [];
+            state.startTime = Date.now();
+            
+            showSection('sec-quiz');
+            loadNextQuestion();
+
+            state.timerInterval = setInterval(() => {
+                const sec = Math.floor((Date.now() - state.startTime) / 1000);
+                const m = String(Math.floor(sec / 60)).padStart(2, '0');
+                const s = String(sec % 60).padStart(2, '0');
+                document.getElementById('quiz-timer').innerHTML = `<i class="fa-regular fa-clock mr-1"></i>${m}:${s}`;
+            }, 1000);
+        }
+
+        function loadNextQuestion() {
+            const q = state.questions[state.currentIndex];
+            document.getElementById('q-idx').innerText = state.currentIndex + 1;
+            document.getElementById('question-display').innerText = q.questionHtml;
+            
+            const input = document.getElementById('answer-input');
+            input.value = ''; input.disabled = false; input.focus();
+            
+            const progress = (state.currentIndex / 15) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        document.getElementById('answer-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.trim() !== '') checkAnswer(this.value.trim());
         });
-      });
-    }
 
-    function downloadPdf() {
-      const wrapper = document.getElementById('pdf-wrapper');
-      const container = document.getElementById('pdf-container');
-      wrapper.style.display = 'block';
-      wrapper.style.position = 'absolute';
-      wrapper.style.top = '0';
-      wrapper.style.left = '50%';
-      wrapper.style.transform = 'translateX(-50%)';
-      wrapper.style.zIndex = '-1000';
-      html2pdf().set(getPdfOptions()).from(container).save().then(() => {
-        wrapper.style.display = 'none';
-        wrapper.style.position = '';
-        wrapper.style.top = '';
-        wrapper.style.left = '';
-        wrapper.style.transform = '';
-      });
-    }
+        function checkAnswer(userStr) {
+            const input = document.getElementById('answer-input');
+            input.disabled = true;
 
-    function showLeaderboard() {
-      showScreen('leaderboard-screen');
-      document.getElementById('leaderboard-body').innerHTML = '<tr><td colspan="5" class="py-4">불러오는 중...</td></tr>';
-      apiCall({ action: 'getLeaderboard' }).then((res) => {
-        const records = res.leaderboard || [];
-        let html = '';
-        records.forEach((r, idx) => {
-          let rankClass = idx === 0 ? 'text-yellow-600 font-bold text-lg' : 
-                          idx === 1 ? 'text-gray-500 font-bold text-lg' : 
-                          idx === 2 ? 'text-orange-500 font-bold text-lg' : '';
-          let medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
-          html += `<tr class="hover:bg-gray-50">
-            <td class="py-3 ${rankClass}">${medal}</td>
-            <td class="py-3">${r.id}</td>
-            <td class="py-3">${r.name}</td>
-            <td class="py-3 font-bold text-blue-600">${r.score}</td>
-            <td class="py-3">${r.time}초</td>
-          </tr>`;
+            const userAnswerVal = parseInt(userStr);
+            const q = state.questions[state.currentIndex];
+            const isCorrect = !isNaN(userAnswerVal) && userAnswerVal === q.answerVal;
+
+            const stampCorrect = document.getElementById('stamp-correct');
+            const stampWrong = document.getElementById('stamp-wrong');
+            const quizBox = document.getElementById('quiz-box');
+
+            if (isCorrect) {
+                document.getElementById('sound-correct').play();
+                stampCorrect.classList.add('stamp-show');
+            } else {
+                document.getElementById('sound-wrong').play();
+                stampWrong.classList.add('stamp-show');
+                quizBox.classList.add('shake-anim');
+            }
+
+            state.results.push({
+                question: q.questionText,
+                questionHtml: q.questionHtml,
+                userAnswer: userStr,
+                correctAnswer: q.correctAnswerStr,
+                isCorrect: isCorrect
+            });
+
+            setTimeout(() => {
+                stampCorrect.classList.remove('stamp-show');
+                stampWrong.classList.remove('stamp-show');
+                quizBox.classList.remove('shake-anim');
+                
+                state.currentIndex++;
+                if (state.currentIndex < 15) loadNextQuestion();
+                else finishQuiz();
+            }, 800);
+        }
+
+        async function finishQuiz() {
+            clearInterval(state.timerInterval);
+            showSection('sec-loading');
+
+            const timeTaken = Math.floor((Date.now() - state.startTime) / 1000);
+            const correctCount = state.results.filter(r => r.isCorrect).length;
+
+            let wrongList = [];
+            state.results.forEach((r) => {
+                if (!r.isCorrect) wrongList.push(`${r.question} (학생답:${r.userAnswer}, 정답:${r.correctAnswer})`);
+            });
+            const wrongListStr = wrongList.length > 0 ? wrongList.join(", ") : "틀린 문제가 없습니다. 완벽합니다!";
+
+            apiCall({ action: 'getFeedback', name: state.student.name, score: correctCount, time: timeTaken, wrongListStr: wrongListStr }).then((res) => {
+                let feedbackText = res.feedback || res.message || "⚠️ 피드백을 불러오지 못했습니다.";
+                showResultView(timeTaken, correctCount, feedbackText);
+            }).catch(() => {
+                customAlert("결과 처리 중 오류가 발생했습니다.");
+            });
+        }
+
+        function showResultView(time, correct, feedbackText) {
+            showSection('sec-result');
+
+            const id = state.student.id || '학번미상';
+            const name = state.student.name || '이름미상';
+            
+            document.getElementById('report-title').innerText = `${id} ${name} 학생의 학습 결과 리포트`;
+            document.getElementById('report-correct').innerHTML = `<i class="fa-solid fa-check text-amber-500 mr-2"></i>맞힌 개수: <span class="font-bold text-amber-600">${correct} / 15</span>`;
+            document.getElementById('report-time').innerHTML = `<i class="fa-regular fa-clock text-slate-400 mr-2"></i>걸린 시간: <span class="font-bold text-slate-700">${time}초</span>`;
+            document.getElementById('report-date').innerHTML = `<i class="fa-regular fa-calendar text-slate-400 mr-2"></i>접속 일시: <span class="font-bold text-slate-700">${state.student.loginTime}</span>`;
+
+            const tbody = document.getElementById('result-table-body');
+            tbody.innerHTML = '';
+            state.results.forEach((r, idx) => {
+                const isCorrectStr = r.isCorrect 
+                    ? '<span style="color: #10b981; font-weight: bold; font-size: 1.1rem;">O</span>' 
+                    : '<span style="color: #ef4444; font-weight: bold; font-size: 1.1rem;">X</span>';
+                const userAnsStyle = r.isCorrect ? 'color: #334155;' : 'color: #ef4444; font-weight: bold;';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="vertical-align: middle;">${idx + 1}</td>
+                    <td style="font-size: 1.1rem; font-family: serif; vertical-align: middle;">${r.questionHtml}</td>
+                    <td style="${userAnsStyle} vertical-align: middle;">${r.userAnswer}</td>
+                    <td style="font-family: serif; vertical-align: middle;">${r.correctAnswer}</td>
+                    <td style="vertical-align: middle;">${isCorrectStr}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (feedbackText) {
+                feedbackText = feedbackText.replace(/\[학생 이름\]/g, name);
+                feedbackText = feedbackText.replace(/\[학생이름\]/g, name);
+                
+                let firstName = name.length >= 2 ? name.substring(1) : name;
+                let searchNames = [name, firstName];
+                
+                searchNames.forEach(n => {
+                    const wrongCallRegex = new RegExp(n + '[아야]', 'g');
+                    feedbackText = feedbackText.replace(wrongCallRegex, firstName + ' 학생');
+                });
+                
+                feedbackText = feedbackText.replace(/oo야/g, name + ' 학생');
+                feedbackText = feedbackText.replace(/oo아/g, name + ' 학생');
+                feedbackText = feedbackText.replace(/oo/g, name + ' 학생');
+                
+                feedbackText = feedbackText.replace(/(정답:.*?)\s*(?:\*\*설명:\*\*|설명:)/g, '$1\n\n**설명:** ');
+            }
+
+            document.getElementById('ai-feedback-display').innerHTML = marked.parse(feedbackText);
+
+            apiCall({ action: 'getLeaderboard' }).then((res) => {
+                const rankTbody = document.getElementById('ranking-body');
+                rankTbody.innerHTML = '';
+                const records = res.leaderboard || [];
+                
+                if (records.length > 0) {
+                    records.forEach((r, idx) => {
+                        let rankStyle = "text-slate-600";
+                        if(idx === 0) rankStyle = "text-yellow-500 font-bold";
+                        else if(idx === 1) rankStyle = "text-slate-400 font-bold";
+                        else if(idx === 2) rankStyle = "text-amber-600 font-bold";
+
+                        const row = `
+                            <tr class="hover:bg-slate-50 transition-colors">
+                                <td class="px-4 py-3 text-center ${rankStyle}">${idx + 1}</td>
+                                <td class="px-4 py-3 font-medium text-slate-700">${r.name}</td>
+                                <td class="px-4 py-3 text-center text-amber-600 font-bold">${r.score}</td>
+                                <td class="px-4 py-3 text-center text-slate-500 text-xs">${r.time}초</td>
+                                <td class="px-4 py-3 text-center text-slate-500 text-xs">${r.loginTime || '-'}</td>
+                            </tr>
+                        `;
+                        rankTbody.innerHTML += row;
+                    });
+                } else {
+                    rankTbody.innerHTML = `<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">데이터가 없습니다.</td></tr>`;
+                }
+            });
+
+            createAndSavePDF(time, correct);
+        }
+
+        function getPdfOptions() {
+            return {
+                margin:       [15, 10, 15, 10],
+                filename:     `${state.student.id || '학번'}_${state.student.name || '이름'}_학습결과.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: 'css' }
+            };
+        }
+
+        function createAndSavePDF(timeTaken, correctCount) {
+            setTimeout(() => {
+                const element = document.getElementById('pdf-content');
+                html2pdf().set(getPdfOptions()).from(element).outputPdf('datauristring').then(function(pdfBase64) {
+                    const base64Data = pdfBase64.split(',')[1];
+                    apiCall({
+                        action: 'saveRecordAndPdf',
+                        id: state.student.id,
+                        name: state.student.name,
+                        loginTime: state.student.loginTime,
+                        score: correctCount,
+                        time: timeTaken,
+                        pdfBase64Data: base64Data
+                    });
+                });
+            }, 1500);
+        }
+
+        document.getElementById('pdf-download-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            const pdfBtn = document.getElementById('pdf-download-btn');
+            const originalContent = pdfBtn.innerHTML;
+            pdfBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>PDF 생성 중...';
+            pdfBtn.disabled = true;
+
+            const element = document.getElementById('pdf-content');
+            html2pdf().set(getPdfOptions()).from(element).save().then(() => {
+                pdfBtn.innerHTML = originalContent;
+                pdfBtn.disabled = false;
+            });
         });
-        document.getElementById('leaderboard-body').innerHTML = html;
-      });
-    }
-  </script>
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const studentIdInput = document.getElementById('studentId');
+            if(studentIdInput) studentIdInput.focus();
+        });
+    </script>
 </body>
 </html>
